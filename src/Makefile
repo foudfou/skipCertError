@@ -44,6 +44,12 @@ install_rdf := install.rdf
 # The chrome.manifest file.
 chrome_manifest := chrome.manifest
 
+# The defaults dir.
+defaults_dir := defaults
+
+# The preferences dir.
+preferences_dir := $(defaults_dir)/preferences
+
 # This builds the extension XPI file.
 .PHONY: all
 all: $(xpi_file)
@@ -66,14 +72,15 @@ include chrome/Makefile.in
 # Makefiles.
 xpi_built := $(build_dir)/$(install_rdf) \
              $(build_dir)/$(chrome_manifest) \
-             $(chrome_jar_file)
+             $(chrome_jar_file) \
+             $(build_dir)/$(preferences_dir)/prefs.js
 
 xpi_built_no_dir := $(subst $(build_dir)/,,$(xpi_built))
 
 # This builds everything except for the actual XPI, and then it copies it to the
 # specified profile directory, allowing a quick update that requires no install.
 .PHONY: install
-install: $(build_dir) $(xpi_built) $(profile_location)
+install: $(build_dir) $(xpi_built) clean_profile $(profile_location)
 	@echo "Installing in profile folder: $(profile_location)"
 	@cp -Rf $(build_dir)/* $(profile_location)
 	@echo "Installing in profile folder. Done!"
@@ -83,6 +90,25 @@ $(xpi_file): $(build_dir) $(xpi_built)
 	@echo "Creating XPI file."
 	@cd $(build_dir); $(ZIP) ../$(xpi_file) $(xpi_built_no_dir)
 	@echo "Creating XPI file. Done!"
+
+$(build_dir)/$(preferences_dir)/%: \
+  $(preferences_dir)/% $(build_dir)/$(preferences_dir)
+	@cp -f $< $@
+
+$(build_dir)/$(defaults_dir)/%: $(defaults_dir)/% $(build_dir)/$(defaults_dir)
+	@cp -f $< $@
+
+$(build_dir)/$(preferences_dir): $(build_dir)/$(defaults_dir)
+	@if [ ! -x $(build_dir)/$(preferences_dir) ]; \
+  then \
+    mkdir $(build_dir)/$(preferences_dir); \
+  fi
+
+$(build_dir)/$(defaults_dir):
+	@if [ ! -x $(build_dir)/$(defaults_dir) ]; \
+  then \
+    mkdir $(build_dir)/$(defaults_dir); \
+  fi
 
 $(build_dir)/%: %
 	@cp -f $< $@
@@ -99,3 +125,7 @@ $(profile_location):
   then \
     mkdir $(profile_location); \
   fi
+
+clean_profile:
+	@echo "Removing extention folder: $(profile_location)"
+	@rm -rf $(profile_location)

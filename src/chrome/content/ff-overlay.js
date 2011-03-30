@@ -5,7 +5,7 @@ mitm_me.onFirefoxLoad = function(event) {
 
 mitm_me.showFirefoxContextMenu = function(event) {
   // show or hide the menuitem based on what the context menu is on
-  document.getElementById("context-mitm-me").hidden = gContextMenu.onImage;
+  document.getElementById("context-mitm_me").hidden = gContextMenu.onImage;
 };
 
 window.addEventListener("load", function () { mitm_me.onFirefoxLoad(); }, false);

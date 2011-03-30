@@ -11,6 +11,7 @@
     <em:description>For IT admins who want very much to click through thousands of self-signed certificate warnings and get MitM attacked, this simplifies the process. - This addon is based on Johnath's MitM Me (SSL Error Bypass) addon. Unfortunately not developed further and also increased the request, so I decided to continue the development.</em:description>
     <em:aboutURL>chrome://mitm-me/content/about.xul</em:aboutURL>
     <em:optionsURL>chrome://mitm-me/content/options.xul</em:optionsURL>
+    <em:iconURL>chrome://mitm-me/skin/logo.png</em:iconURL>
     <em:targetApplication>
       <Description>
         <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id> <!-- Firefox -->
