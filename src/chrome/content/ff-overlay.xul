@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="chrome://mitm-me/skin/overlay.css" type="text/css"?>
+<!DOCTYPE overlay SYSTEM "chrome://mitm-me/locale/overlay.dtd">
+<overlay id="mitm-me-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  <script src="overlay.js"/>
+  <script src="ff-overlay.js"/>
+
+  <stringbundleset id="stringbundleset">
+    <stringbundle id="mitm-me-strings" src="chrome://mitm-me/locale/overlay.properties"/>
+  </stringbundleset>
+
+
+
+
+</overlay>

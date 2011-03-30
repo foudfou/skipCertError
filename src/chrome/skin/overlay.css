@@ -1,0 +1,22 @@
+/* This is just an example.  You shouldn't do this. */
+#mitm-me-hello
+{
+  color: red ! important;
+}
+#mitm-me-toolbar-button
+{
+  list-style-image: url("chrome://mitm-me/skin/toolbar-button.png");
+  -moz-image-region: rect(0px 24px 24px 0px);
+}
+#mitm-me-toolbar-button:hover
+{
+  -moz-image-region: rect(24px 24px 48px  0px);
+}
+[iconsize="small"] #mitm-me-toolbar-button
+{
+  -moz-image-region: rect( 0px 40px 16px 24px);
+}
+[iconsize="small"] #mitm-me-toolbar-button:hover
+{
+  -moz-image-region: rect(24px 40px 40px 24px);
+}
