@@ -2,4 +2,4 @@ content   mitm-me                 jar:chrome/mitm-me.jar!/content/
 skin      mitm-me   classic/1.0   jar:chrome/mitm-me.jar!/skin/
 locale    mitm-me   en-US         jar:chrome/mitm-me.jar!/locale/en-US/
 
-overlay   chrome://browser/content/browser.xul   chrome://mitm-me/content/ff-overlay.xul
+overlay   chrome://browser/content/browser.xul   chrome://mitm-me/content/overlay.xul
