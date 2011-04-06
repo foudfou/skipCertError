@@ -3,7 +3,7 @@ pref("extensions.mitm-me@foudil.fr.description", "chrome://mitm-me/locale/overla
 
 // Extension prefs
 pref("extensions.mitm-me.add_temporary_exceptions", true);
-pref("extensions.mitm-me.silent_mode", false);
+pref("extensions.mitm-me.silent_mode", true);
 
 // Set the environment settings
 pref("browser.ssl_override_behavior", 2);
