@@ -70,12 +70,13 @@ include chrome/Makefile.in
 
 # The sources for the XPI file. Uses variables defined in the included
 # Makefiles.
-xpi_built := $(build_dir)/$(install_rdf) \
+xpi_includes := $(build_dir)/$(install_rdf) \
              $(build_dir)/$(chrome_manifest) \
-             $(chrome_jar_file) \
              $(build_dir)/$(preferences_dir)/prefs.js
 
-xpi_built_no_dir := $(subst $(build_dir)/,,$(xpi_built))
+xpi_includes_no_dir := $(subst $(build_dir)/,,$(xpi_includes))
+
+xpi_built := $(xpi_includes) chrome_build
 
 # This builds everything except for the actual XPI, and then it copies it to the
 # specified profile directory, allowing a quick update that requires no install.
@@ -88,7 +89,7 @@ install: $(build_dir) $(xpi_built) clean_profile $(profile_location)
 
 $(xpi_file): $(build_dir) $(xpi_built)
 	@echo "Creating XPI file."
-	@cd $(build_dir); $(ZIP) ../$(xpi_file) $(xpi_built_no_dir)
+	@cd $(build_dir); $(ZIP) ../$(xpi_file) $(xpi_includes_no_dir) $(chrome_sources)
 	@echo "Creating XPI file. Done!"
 
 $(build_dir)/$(preferences_dir)/%: \
