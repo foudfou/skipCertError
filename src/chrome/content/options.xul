@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
-<!DOCTYPE prefwindow SYSTEM "chrome://mitm-me/locale/options.dtd">
-<prefwindow id="mitm-me-preferences" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" title="&prefwindow.title;">
+<!DOCTYPE prefwindow SYSTEM "chrome://mitmme/locale/options.dtd">
+<prefwindow id="mitmme-preferences" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" title="&prefwindow.title;">
   <prefpane id="pane1" label="&pane1.title;">
     <preferences>
-      <preference id="bool_add_temporary_exceptions" name="extensions.mitm-me.add_temporary_exceptions" type="bool"/>
-      <preference id="bool_silent_mode" name="extensions.mitm-me.silent_mode" type="bool"/>
+      <preference id="bool_add_temporary_exceptions" name="extensions.mitmme.add_temporary_exceptions" type="bool"/>
+      <preference id="bool_silent_mode" name="extensions.mitmme.silent_mode" type="bool"/>
     </preferences>
     <checkbox id="bool_add_temporary_exceptions" preference="bool_add_temporary_exceptions" label="&bool_add_temporary_exceptions.label;" accesskey="&bool_add_temporary_exceptions.accesskey;"/>
     <checkbox id="bool_silent_mode" preference="bool_silent_mode" label="&bool_silent_mode.label;" accesskey="&bool_silent_mode.accesskey;"/>

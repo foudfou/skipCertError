@@ -1,8 +1,8 @@
 # The UUID of the extension.
-extension_uuid := mitm-me@foudil.fr
+extension_uuid := mitmme@foudil.fr
 
 # The name of the profile dir where the extension can be installed.
-profile_dir := mitm-me-dev
+profile_dir := mitmme-dev
 
 # The zip application to be used.
 ZIP := zip
@@ -55,12 +55,19 @@ chrome_sources := $(wildcard $(chrome_source_root)/content/*.js) \
                $(wildcard $(chrome_source_root)/locale/*/*.dtd) \
                $(wildcard $(chrome_source_root)/locale/*/*.properties)
 
+# The modules (JSM) dir.
+modules_dir := modules
+
+# The sources for the module files.
+modules_sources := $(wildcard $(modules_dir)/*.js)
+
 # The sources for the XPI file. Uses variables defined in the included
 # Makefiles.
 xpi_includes := $(install_rdf) \
              $(chrome_manifest) \
              $(preferences_dir)/prefs.js \
-             $(chrome_sources)
+             $(chrome_sources) \
+             $(modules_sources)
 
 $(xpi_file): $(build_dir) $(xpi_includes)
 	@echo "Creating XPI file."

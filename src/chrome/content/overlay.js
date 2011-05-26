@@ -39,18 +39,26 @@
 *
 * ***** END LICENSE BLOCK ***** */
 
-var mitm_me = {
-  DEBUG_MODE: true,
+Components.utils.import("resource://mitmme/commons.js");
+
+/**
+ * mitmmeChrome namespace.
+ */
+if ("undefined" == typeof(mitmmeChrome)) {
+  var mitmmeChrome = {};
+};
+
+mitmmeChrome = {
 
   onLoad: function() {
     // initialization code
     this.initialized = true;
-    this.strings = document.getElementById("mitm-me-strings");
+    this.strings = document.getElementById("mitmme-strings");
 
     // Set up preference change observer
     this._prefService =
       Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService)
-      .getBranch("extensions.mitm-me.");
+      .getBranch("extensions.mitmme.");
     this._prefService.QueryInterface(Ci.nsIPrefBranch2);
     this._prefService.addObserver("", this, false);
 
@@ -60,12 +68,12 @@ var mitm_me = {
       .getService(Components.interfaces.nsICertOverrideService);
 
     try {
-      gBrowser.addTabsProgressListener(mitm_me.TabsProgressListener);
+      gBrowser.addTabsProgressListener(mitmmeChrome.TabsProgressListener);
     } catch (ex) {
       Components.utils.reportError(ex);
     }
 
-    this.dump('MITMME LOADED !');
+    mitmme.Debug.dump('MITMME LOADED !');
   },
 
   onQuit: function() {
@@ -77,28 +85,8 @@ var mitm_me = {
   observe: function(subject, topic, data) {
     // Observer for pref changes
     if (topic != "nsPref:changed") return;
-    this.dump('Pref changed: '+data);
+    mitmme.Debug.dump('Pref changed: '+data);
     // preform actions here: switch(data) { ...
-  },
-
-  /* Console logging functions */
-  /* NOTE: Web Console inappropriates: doesn't catch all messages */
-  dump: function(message) { // Debuging function -- prints to javascript console
-    if(!this.DEBUG_MODE) return;
-    var ConsoleService = Cc['@mozilla.org/consoleservice;1'].getService(Ci.nsIConsoleService);
-    ConsoleService.logStringMessage(message);
-  },
-  dumpObj: function(obj) {
-    if(!this.DEBUG_MODE) return;
-    var str = "";
-    for(i in obj) {
-      try {
-        str += "obj["+i+"]: " + obj[i] + "\n";
-      } catch(e) {
-        str += "obj["+i+"]: Unavailable\n";
-      }
-    }
-    this.dump(str);
   },
 
   // Lifted from exceptionDialog.js in PSM
@@ -128,7 +116,7 @@ var mitm_me = {
     // HTTPS -> HTTP, FOO -> HTTPS) and *after document load* completion. It
     // might also be called if an error occurs during network loading.
     onSecurityChange: function (aBrowser, aWebProgress, aRequest, aState) {
-      mitm_me.dump("onSecurityChange");
+      mitmme.Debug.dump("onSecurityChange");
       var uri = aBrowser.currentURI;
 
       if (!uri.schemeIs("https")) return;
@@ -137,7 +125,7 @@ var mitm_me = {
       // aBrowser.currentURI), so we *should* know already about the badcert,
       // and could be using nsIRecentBadCertsService. BUT, for some reason...
       // ...at this stage, the bad cert is unknown, so we need to:
-      mitm_me.getCert(uri); // sets gSSLStatus using badCertListener()
+      mitmmeChrome.getCert(uri); // sets gSSLStatus using badCertListener()
                             // TODO: don't use a global
 
       if (!gSSLStatus) {
@@ -146,23 +134,23 @@ var mitm_me = {
       }
 
 			var cert = gSSLStatus.serverCert;
-      mitm_me.dump("gSSLStatus");
-      mitm_me.dumpObj(gSSLStatus);
-      mitm_me.dump("cert");
-      mitm_me.dumpObj(cert);
+      mitmme.Debug.dump("gSSLStatus");
+      mitmme.Debug.dumpObj(gSSLStatus);
+      mitmme.Debug.dump("cert");
+      mitmme.Debug.dumpObj(cert);
 
       // we're only interested in self-signed certs
       cert.QueryInterface(Components.interfaces.nsIX509Cert3);
-      mitm_me.dump("isSelfSigned:" + cert.isSelfSigned);
+      mitmme.Debug.dump("isSelfSigned:" + cert.isSelfSigned);
       // ...or maybe also by unknown issuer
 			var verificationResult = cert.verifyForUsage(Ci.nsIX509Cert.CERT_USAGE_SSLServer);
 			switch (verificationResult) {
 			case Ci.nsIX509Cert.ISSUER_NOT_TRUSTED: // including self-signed
-				mitm_me.dump("issuer not trusted");
+				mitmme.Debug.dump("issuer not trusted");
 			case Ci.nsIX509Cert.ISSUER_UNKNOWN:
-				mitm_me.dump("issuer unknown");
+				mitmme.Debug.dump("issuer unknown");
 			default:
-				mitm_me.dump("verificationResult: " + verificationResult);
+				mitmme.Debug.dump("verificationResult: " + verificationResult);
 				break;
 			}
 
@@ -171,7 +159,7 @@ var mitm_me = {
     onStateChange: function (aBrowser, aWebProgress, aRequest, aStateFlags, aStatus) {
       if (aStateFlags & Ci.nsIWebProgressListener.STATE_STOP &&
           /^about:certerror/.test(aWebProgress.DOMWindow.document.documentURI)) {
-        mitm_me.dump("onStateChange: certerror: "
+        mitmme.Debug.dump("onStateChange: certerror: "
                      + aWebProgress.DOMWindow.document.documentURI);
       }
     },
@@ -207,6 +195,8 @@ badCertListener.prototype = {
   }
 }
 
-// is this sufficient for a delayed Startup ?
+
+// should be sufficient for a delayed Startup (no need for window.setTimeout())
 // https://developer.mozilla.org/en/Extensions/Performance_best_practices_in_extensions
-window.addEventListener("load", function () { mitm_me.onLoad(); }, false);
+// https://developer.mozilla.org/en/XUL_School/JavaScript_Object_Management.html
+window.addEventListener("load", function () { mitmmeChrome.onLoad(); }, false);

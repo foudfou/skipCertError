@@ -1,5 +1,6 @@
-content   mitm-me                 chrome/content/
-skin      mitm-me   classic/1.0   chrome/skin/
-locale    mitm-me   en-US         chrome/locale/en-US/
+content		mitmme			chrome/content/
+skin		mitmme	classic/1.0	chrome/skin/
+locale		mitmme	en-US		chrome/locale/en-US/
+resource	mitmme			modules/
 
-overlay   chrome://browser/content/browser.xul   chrome://mitm-me/content/overlay.xul
+overlay		chrome://browser/content/browser.xul	chrome://mitmme/content/overlay.xul

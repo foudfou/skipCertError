@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
   <Description about="urn:mozilla:install-manifest">
-    <em:id>mitm-me@foudil.fr</em:id>
+    <em:id>mitmme@foudil.fr</em:id>
     <em:unpack>false</em:unpack>
     <em:type>2</em:type>
     <em:name>MitM Me (Cert Error Bypass)</em:name>
@@ -10,8 +10,8 @@
     <em:contributor>Andras TIM</em:contributor>
     <em:contributor>Johnathan Nightingale (original addon)</em:contributor>
     <em:description>For IT admins who want very much to click through thousands of self-signed certificate warnings and get MitM attacked, this simplifies the process. - This addon is based on Johnath's MitM Me (SSL Error Bypass) addon. Unfortunately not developed further and also increased the request, so I decided to continue the development.</em:description>
-    <em:optionsURL>chrome://mitm-me/content/options.xul</em:optionsURL>
-    <em:iconURL>chrome://mitm-me/skin/logo.png</em:iconURL>
+    <em:optionsURL>chrome://mitmme/content/options.xul</em:optionsURL>
+    <em:iconURL>chrome://mitmme/skin/logo.png</em:iconURL>
     <em:targetApplication>
       <Description>
         <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id> <!-- Firefox -->
