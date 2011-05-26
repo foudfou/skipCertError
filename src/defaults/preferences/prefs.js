@@ -2,6 +2,7 @@
 pref("extensions.mitmme@foudil.fr.description", "chrome://mitmme/locale/overlay.properties");
 
 // Extension prefs
+pref("extensions.mitmme.enabled", true);
 pref("extensions.mitmme.add_temporary_exceptions", true);
 pref("extensions.mitmme.silent_mode", true);
 

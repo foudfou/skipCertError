@@ -1,5 +1,7 @@
 <!ENTITY prefwindow.title "MitM Me (Cert Error Bypass) preferences">
 <!ENTITY pane1.title "MitM Me (Cert Error Bypass) preferences">
+<!ENTITY bool_enabled.label "Enable bypass">
+<!ENTITY bool_enabled.accesskey "E">
 <!ENTITY bool_add_temporary_exceptions.label "Add the exclusions as temporary">
 <!ENTITY bool_add_temporary_exceptions.accesskey "T">
 <!ENTITY bool_silent_mode.label "Silent mode (not wait for press the add button)">

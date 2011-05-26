@@ -1,13 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 <!DOCTYPE prefwindow SYSTEM "chrome://mitmme/locale/options.dtd">
-<prefwindow id="mitmme-preferences" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul" title="&prefwindow.title;">
-  <prefpane id="pane1" label="&pane1.title;">
-    <preferences>
-      <preference id="bool_add_temporary_exceptions" name="extensions.mitmme.add_temporary_exceptions" type="bool"/>
-      <preference id="bool_silent_mode" name="extensions.mitmme.silent_mode" type="bool"/>
-    </preferences>
-    <checkbox id="bool_add_temporary_exceptions" preference="bool_add_temporary_exceptions" label="&bool_add_temporary_exceptions.label;" accesskey="&bool_add_temporary_exceptions.accesskey;"/>
-    <checkbox id="bool_silent_mode" preference="bool_silent_mode" label="&bool_silent_mode.label;" accesskey="&bool_silent_mode.accesskey;"/>
-  </prefpane>
+<prefwindow id="mitmme-preferences"
+            xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+            title="&prefwindow.title;">
+    <script type="application/x-javascript" src="chrome://global/content/nsUserSettings.js" />
+    <prefpane id="pane1" label="&pane1.title;">
+        <preferences>
+            <preference id="pref_bool_enabled"
+                        name="extensions.mitmme.enabled" type="bool"/>
+            <preference id="pref_bool_add_temporary_exceptions"
+                        name="extensions.mitmme.add_temporary_exceptions" type="bool"/>
+            <preference id="pref_bool_silent_mode"
+                        name="extensions.mitmme.silent_mode" type="bool"/>
+        </preferences>
+        <checkbox id="ui_enabled" preference="pref_bool_enabled"
+                  label="&bool_enabled.label;"
+                  accesskey="&bool_enabled.accesskey;"
+                  onclick="toggleOthers(this.checked);"/>
+        <checkbox id="ui_add_temporary_exceptions"
+                  preference="pref_bool_add_temporary_exceptions"
+                  label="&bool_add_temporary_exceptions.label;"
+                  accesskey="&bool_add_temporary_exceptions.accesskey;"/>
+        <checkbox id="ui_silent_mode" preference="pref_bool_silent_mode"
+                  label="&bool_silent_mode.label;"
+                  accesskey="&bool_silent_mode.accesskey;"/>
+    </prefpane>
+
+<script><![CDATA[
+
+    function toggleOthers(wasChecked) {
+      document.getElementById('ui_add_temporary_exceptions').disabled = wasChecked;
+      document.getElementById('ui_silent_mode').disabled = wasChecked;
+    }
+
+    toggleOthers(!nsPreferences.getBoolPref('extensions.mitmme.enabled'));
+
+]]></script>
+
 </prefwindow>

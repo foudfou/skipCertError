@@ -45,7 +45,7 @@ mitmme.Main = {
 
   onLoad: function() {
     // initialization code
-    this.initialized = true;
+    this.initialized = null;
     this.strings = document.getElementById("mitmme-strings");
 
     try {
@@ -68,28 +68,54 @@ mitmme.Main = {
       return false;
     }
 
+    var enabled = this._prefService.getBoolPref('enabled');
+    mitmme.Debug.dump('enabled: '+enabled);
+    if (enabled)
+      this._toggle(true);
+
+    mitmme.Debug.dump('MITMME LOADED !');
+    this.initialized = true;
+    return true;
+  },
+
+  _toggle: function (enable) {
+    mitmme.Debug.dump('toggle: '+enable);
     try {
-      gBrowser.addTabsProgressListener(mitmme.Main.TabsProgressListener);
+      if (enable)
+        gBrowser.addTabsProgressListener(this.TabsProgressListener);
+      else
+        gBrowser.removeTabsProgressListener(this.TabsProgressListener);
     } catch (ex) {
       Components.utils.reportError(ex);
       return false;
     }
+  },
 
-    mitmme.Debug.dump('MITMME LOADED !');
-    return true;
+  hi: function (obj) {
+    mitmme.Debug.dumpObj(obj);
   },
 
   onQuit: function() {
     // Remove observer
-    this._prefService.QueryInterface(Ci.nsIPrefBranch2);
     this._prefService.removeObserver("", this);
+
+    this._toogle(false);
+
+    mitmme.Debug.dump('MITMME UNLOADED !');
+    this.initialized = false;
   },
 
   observe: function(subject, topic, data) {
     // Observer for pref changes
     if (topic != "nsPref:changed") return;
     mitmme.Debug.dump('Pref changed: '+data);
-    // preform actions here: switch(data) { ...
+
+    switch(data) {
+    case 'enabled':
+      var enable = this._prefService.getBoolPref('enabled');
+      this._toggle(enable);
+      break;
+    }
   },
 
   TabsProgressListener: {
@@ -112,7 +138,7 @@ mitmme.Main = {
         Components.utils.reportError("MITMME: couldn't get SSLStatus for: " + hostWithPort);
         return;
       }
-			var cert = SSLStatus.serverCert;
+      var cert = SSLStatus.serverCert;
       mitmme.Debug.dump("SSLStatus");
       mitmme.Debug.dumpObj(SSLStatus);
       mitmme.Debug.dump("cert");
@@ -122,16 +148,16 @@ mitmme.Main = {
       cert.QueryInterface(Components.interfaces.nsIX509Cert3);
       mitmme.Debug.dump("isSelfSigned:" + cert.isSelfSigned);
       // ...or maybe also by unknown issuer
-			var verificationResult = cert.verifyForUsage(Ci.nsIX509Cert.CERT_USAGE_SSLServer);
-			switch (verificationResult) {
-			case Ci.nsIX509Cert.ISSUER_NOT_TRUSTED: // including self-signed
-				mitmme.Debug.dump("issuer not trusted");
-			case Ci.nsIX509Cert.ISSUER_UNKNOWN:
-				mitmme.Debug.dump("issuer unknown");
-			default:
-				mitmme.Debug.dump("verificationResult: " + verificationResult);
-				break;
-			}
+      var verificationResult = cert.verifyForUsage(Ci.nsIX509Cert.CERT_USAGE_SSLServer);
+      switch (verificationResult) {
+      case Ci.nsIX509Cert.ISSUER_NOT_TRUSTED: // including self-signed
+        mitmme.Debug.dump("issuer not trusted");
+      case Ci.nsIX509Cert.ISSUER_UNKNOWN:
+        mitmme.Debug.dump("issuer unknown");
+      default:
+        mitmme.Debug.dump("verificationResult: " + verificationResult);
+        break;
+      }
 
     }, // END TabsProgressListener
 
@@ -152,3 +178,4 @@ mitmme.Main = {
 // https://developer.mozilla.org/en/Extensions/Performance_best_practices_in_extensions
 // https://developer.mozilla.org/en/XUL_School/JavaScript_Object_Management.html
 window.addEventListener("load", function () { mitmme.Main.onLoad(); }, false);
+window.addEventListener("unload", function(e) { mitmme.Main.onQuit(); }, false);
