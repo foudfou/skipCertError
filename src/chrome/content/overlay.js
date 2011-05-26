@@ -41,39 +41,42 @@
 
 Components.utils.import("resource://mitmme/commons.js");
 
-/**
- * mitmmeChrome namespace.
- */
-if ("undefined" == typeof(mitmmeChrome)) {
-  var mitmmeChrome = {};
-};
-
-mitmmeChrome = {
+mitmme.Main = {
 
   onLoad: function() {
     // initialization code
     this.initialized = true;
     this.strings = document.getElementById("mitmme-strings");
 
-    // Set up preference change observer
-    this._prefService =
-      Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService)
-      .getBranch("extensions.mitmme.");
-    this._prefService.QueryInterface(Ci.nsIPrefBranch2);
-    this._prefService.addObserver("", this, false);
+    try {
+      // Set up preference change observer
+      this._prefService =
+        Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService)
+        .getBranch("extensions.mitmme.");
+      this._prefService.QueryInterface(Ci.nsIPrefBranch2);
+      this._prefService.addObserver("", this, false);
 
-    // Get cert services
-    this._overrideService =
-      Cc["@mozilla.org/security/certoverride;1"]
-      .getService(Components.interfaces.nsICertOverrideService);
+      // Get cert services
+      this._overrideService =
+        Cc["@mozilla.org/security/certoverride;1"]
+        .getService(Components.interfaces.nsICertOverrideService);
+      this._recentCertsSvc = Cc["@mozilla.org/security/recentbadcerts;1"]
+        .getService(Ci.nsIRecentBadCertsService);
+    }
+    catch (ex) {
+      Components.utils.reportError(ex);
+      return false;
+    }
 
     try {
-      gBrowser.addTabsProgressListener(mitmmeChrome.TabsProgressListener);
+      gBrowser.addTabsProgressListener(mitmme.Main.TabsProgressListener);
     } catch (ex) {
       Components.utils.reportError(ex);
+      return false;
     }
 
     mitmme.Debug.dump('MITMME LOADED !');
+    return true;
   },
 
   onQuit: function() {
@@ -89,53 +92,29 @@ mitmmeChrome = {
     // preform actions here: switch(data) { ...
   },
 
-  // Lifted from exceptionDialog.js in PSM
-  getCert: function(uri) {
-    var req = new XMLHttpRequest();
-    try {
-      if(uri) {
-        req.open('GET', uri.prePath, false);
-        req.channel.notificationCallbacks = new badCertListener();
-        req.send(null);
-      }
-    } catch (e) {
-      // We *expect* exceptions if there are problems with the certificate
-      // presented by the site. Log it, just in case, but we can proceed here,
-      // with appropriate sanity checks
-      Components.utils.reportError("MITMME: Attempted to connect to a site with a bad certificate. " +
-                                   "This results in a (mostly harmless) exception being thrown. " +
-                                   "Logged for information purposes only: " + e);
-    } finally {
-      gChecking = false;
-    }
-  },
-
   TabsProgressListener: {
 
     // This method will be called on security transitions (eg HTTP -> HTTPS,
     // HTTPS -> HTTP, FOO -> HTTPS) and *after document load* completion. It
     // might also be called if an error occurs during network loading.
     onSecurityChange: function (aBrowser, aWebProgress, aRequest, aState) {
-      mitmme.Debug.dump("onSecurityChange");
       var uri = aBrowser.currentURI;
+      mitmme.Debug.dump("onSecurityChange: uri=" + uri.prePath);
 
       if (!uri.schemeIs("https")) return;
 
-      // NOTE: the documentation says "after document load" (assuming
-      // aBrowser.currentURI), so we *should* know already about the badcert,
-      // and could be using nsIRecentBadCertsService. BUT, for some reason...
-      // ...at this stage, the bad cert is unknown, so we need to:
-      mitmmeChrome.getCert(uri); // sets gSSLStatus using badCertListener()
-                            // TODO: don't use a global
-
-      if (!gSSLStatus) {
-        Components.utils.reportError("MITMME: couldn't get gSSLStatus");
+      // retrieve bad cert from nsIRecentBadCertsService
+      var port = uri.port;
+      if (port == -1) port = 443; // thx http://gitorious.org/perspectives-notary-server/
+      var hostWithPort = uri.host + ":" + port;
+      var SSLStatus = mitmme.Main._recentCertsSvc.getRecentBadCert(hostWithPort);
+      if (!SSLStatus) {
+        Components.utils.reportError("MITMME: couldn't get SSLStatus for: " + hostWithPort);
         return;
       }
-
-			var cert = gSSLStatus.serverCert;
-      mitmme.Debug.dump("gSSLStatus");
-      mitmme.Debug.dumpObj(gSSLStatus);
+			var cert = SSLStatus.serverCert;
+      mitmme.Debug.dump("SSLStatus");
+      mitmme.Debug.dumpObj(SSLStatus);
       mitmme.Debug.dump("cert");
       mitmme.Debug.dumpObj(cert);
 
@@ -169,34 +148,7 @@ mitmmeChrome = {
 };
 
 
-// Simple badcertlistener lifted from exceptionDialog.js in PSM
-function badCertListener() {}
-badCertListener.prototype = {
-  getInterface: function (aIID) {
-    return this.QueryInterface(aIID);
-  },
-  QueryInterface: function(aIID) {
-    if (aIID.equals(Components.interfaces.nsIBadCertListener2) ||
-        aIID.equals(Components.interfaces.nsIInterfaceRequestor) ||
-        aIID.equals(Components.interfaces.nsISupports))
-      return this;
-
-    throw Components.results.NS_ERROR_NO_INTERFACE;
-  },
-  handle_test_result: function () {
-    if (gSSLStatus)
-      gCert = gSSLStatus.QueryInterface(Components.interfaces.nsISSLStatus).serverCert;
-  },
-  notifyCertProblem: function MSR_notifyCertProblem(socketInfo, sslStatus, targetHost) {
-    gBroken = true;
-    gSSLStatus = sslStatus;
-    this.handle_test_result();
-    return true; // suppress error UI
-  }
-}
-
-
 // should be sufficient for a delayed Startup (no need for window.setTimeout())
 // https://developer.mozilla.org/en/Extensions/Performance_best_practices_in_extensions
 // https://developer.mozilla.org/en/XUL_School/JavaScript_Object_Management.html
-window.addEventListener("load", function () { mitmmeChrome.onLoad(); }, false);
+window.addEventListener("load", function () { mitmme.Main.onLoad(); }, false);
