@@ -4,12 +4,12 @@
     <em:id>mitmme@foudil.fr</em:id>
     <em:unpack>false</em:unpack>
     <em:type>2</em:type>
-    <em:name>MitM Me (Cert Error Bypass)</em:name>
-    <em:version>3.0.0</em:version>
-    <em:creator>f10l</em:creator>
-    <em:contributor>Andras TIM</em:contributor>
-    <em:contributor>Johnathan Nightingale (original addon)</em:contributor>
-    <em:description>For IT admins who want very much to click through thousands of self-signed certificate warnings and get MitM attacked, this simplifies the process. - This addon is based on Johnath's MitM Me (SSL Error Bypass) addon. Unfortunately not developed further and also increased the request, so I decided to continue the development.</em:description>
+    <em:name>Skip Cert Error</em:name>
+    <em:version>0.1.0</em:version>
+    <em:creator>Foudil BRÉTEL</em:creator>
+    <em:contributor>Andras TIM (MITMME maintainer)</em:contributor>
+    <em:contributor>Johnathan Nightingale (MITMME original author)</em:contributor>
+    <em:description>This Firefox extension enables skipping the SSL/TLS certificate error page, for specific configurable conditions, like self-signed cert or unknown issuer, by adding a temporary exception to FF's cert DB.</em:description>
     <em:optionsURL>chrome://mitmme/content/options.xul</em:optionsURL>
     <em:iconURL>chrome://mitmme/skin/logo.png</em:iconURL>
     <em:targetApplication>
