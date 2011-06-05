@@ -1,0 +1,8 @@
+<!ENTITY mitmme.label "Your localized menuitem">
+<!ENTITY mitmmeContext.label "Your Menuitem">
+<!ENTITY mitmmeContext.accesskey "Y">
+<!ENTITY mitmmeToolbarButton.label "Your Toolbar Button">
+<!ENTITY mitmmeToolbarButton.tooltip "This is your toolbar button!">
+<!ENTITY mitmmeSidebar.label "Your Sidebar">
+<!ENTITY mitmmeToolbar.name  "example">
+<!ENTITY mitmmeToolbar.label "This is an example toolbar. You can hide it under View &gt; toolbars &gt; &mitmmeToolbar.name;">

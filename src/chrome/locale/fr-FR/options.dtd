@@ -1,0 +1,9 @@
+<!ENTITY prefwindow.title "Préférences MitM Me (Cert Error Bypass)">
+<!ENTITY pane1.title "Préférences MitM Me (Cert Error Bypass)">
+<!ENTITY bool_enabled.label "Activer l'outrepassement">
+<!ENTITY bool_enabled.accesskey "E">
+<!ENTITY bool_add_temporary_exceptions.label "Ajouter les exceptions comme temporaires">
+<!ENTITY bool_add_temporary_exceptions.accesskey "T">
+<!ENTITY bool_silent_mode.label "Mode silencieux (ne demande pas avant
+                                 d'ajouter l'exception)">
+<!ENTITY bool_silent_mode.accesskey "S">

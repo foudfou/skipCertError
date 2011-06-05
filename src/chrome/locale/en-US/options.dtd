@@ -2,7 +2,7 @@
 <!ENTITY pane1.title "MitM Me (Cert Error Bypass) preferences">
 <!ENTITY bool_enabled.label "Enable bypass">
 <!ENTITY bool_enabled.accesskey "E">
-<!ENTITY bool_add_temporary_exceptions.label "Add the exclusions as temporary">
+<!ENTITY bool_add_temporary_exceptions.label "Add the exceptions as temporary">
 <!ENTITY bool_add_temporary_exceptions.accesskey "T">
 <!ENTITY bool_silent_mode.label "Silent mode (does not prompt before adding exception)">
 <!ENTITY bool_silent_mode.accesskey "S">
