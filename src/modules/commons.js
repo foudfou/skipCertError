@@ -23,7 +23,7 @@
 * Contributor(s):
 * Andras TIM - the new developer @ 2010
 * andras.tim@gmail.com, andras.tim@balabit.hu
-* Foudil Brétel <foudil.newbie@bigfoot.com>
+* Foudil Brétel <foudil.newbie@gmail.com>
 *
 * Alternatively, the contents of this file may be used under the terms of
 * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -99,3 +99,12 @@ mitmme.Debug = {
 
 // build it !
 mitmme.Debug.init();
+
+
+mitmme.Utils = {
+
+  safeGetName: function(request) {
+    return request ? request.name : null;
+  },
+
+};
