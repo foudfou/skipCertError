@@ -39,74 +39,20 @@
 *
 * ***** END LICENSE BLOCK ***** */
 
-/*
- * should contain our business logic in JSM, available through service objects,
- * and keep chrome scripts limited to handle presentation logic.
- * http://developer.mozilla.org/en/XUL_School/JavaScript_Object_Management.html
- */
-
-var EXPORTED_SYMBOLS = [ "mitmme" ];
+Components.utils.import("resource://mitmme/commons.js");
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-/**
- * mitmme namespace.
- */
-if ("undefined" == typeof(mitmme)) {
-  var mitmme = {
-    DEBUG_MODE: true,
-  };
-};
+mitmme.UIOptions = {
 
-mitmme.Debug = {
-
-  _initialized: false,
-
-  _consoleService: null,
-
-  /**
-   * Object constructor.
-   */
-  init: function() {
-    if (this._initialized) return;
-    this._consoleService = Cc['@mozilla.org/consoleservice;1'].getService(Ci.nsIConsoleService);
-    this.dump("MITTME Debug initialized");
-    this._initialized = true;
+  onLoad: function() {
+    this.toggleOthers(!mitmme.Utils.prefService.getBoolPref('enabled'));
   },
 
-  /* Console logging functions */
-  /* NOTE: Web Console inappropriates: doesn't catch all messages */
-  dump: function(message) { // Debuging function -- prints to javascript console
-    if(!mitmme.DEBUG_MODE) return;
-    this._consoleService.logStringMessage(message);
-  },
-
-  dumpObj: function(obj) {
-    if(!mitmme.DEBUG_MODE) return;
-    var str = "";
-    for(i in obj) {
-      try {
-        str += "obj["+i+"]: " + obj[i] + "\n";
-      } catch(e) {
-        str += "obj["+i+"]: Unavailable\n";
-      }
-    }
-    this.dump(str);
-  },
-
-};
-// build it !
-mitmme.Debug.init();
-
-
-mitmme.Utils = {
-
-  prefService: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService)
-    .getBranch("extensions.mitmme."),
-
-  safeGetName: function(request) {
-    return request ? request.name : null;
+  toggleOthers: function(wasChecked) {
+    document.getElementById('ui_add_temporary_exceptions').disabled = wasChecked;
+    document.getElementById('ui_silent_mode').disabled = wasChecked;
   },
 
 };

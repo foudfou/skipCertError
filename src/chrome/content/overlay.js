@@ -70,12 +70,9 @@ mitmme.Main = {
 
     try {
       // Set up preference change observer
-      this._prefService =
-        Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService)
-        .getBranch("extensions.mitmme.");
-      this._prefService.QueryInterface(Ci.nsIPrefBranch2);
+      mitmme.Utils.prefService.QueryInterface(Ci.nsIPrefBranch2);
       // must stay out of _toggle()
-      this._prefService.addObserver("", this, false);
+      mitmme.Utils.prefService.addObserver("", this, false);
 
       // Get cert services
       this._overrideService =
@@ -89,7 +86,7 @@ mitmme.Main = {
       return false;
     }
 
-    var enabled = this._prefService.getBoolPref('enabled');
+    var enabled = mitmme.Utils.prefService.getBoolPref('enabled');
     mitmme.Debug.dump('enabled: '+enabled);
     if (enabled)
       this._toggle(true);
@@ -118,7 +115,7 @@ mitmme.Main = {
 
   onQuit: function() {
     // Remove observer
-    this._prefService.removeObserver("", this);
+    mitmme.Utils.prefService.removeObserver("", this);
 
     this._toogle(false);
 
@@ -133,7 +130,7 @@ mitmme.Main = {
 
     switch(data) {
     case 'enabled':
-      var enable = this._prefService.getBoolPref('enabled');
+      var enable = mitmme.Utils.prefService.getBoolPref('enabled');
       this._toggle(enable);
       break;
     }
@@ -223,7 +220,7 @@ mitmme.Main = {
         uri.asciiHost, uri.port,
         cert,
         flags,
-        mitmme.Main._prefService.getBoolPref("add_temporary_exceptions"));
+        mitmme.Utils.prefService.getBoolPref("add_temporary_exceptions"));
       mitmme.Debug.dump("CertEx added");
       this._certExceptionJustAdded = true;
       mitmme.Debug.dump("certEx changed: " + this._certExceptionJustAdded);
