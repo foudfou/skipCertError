@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
-<!DOCTYPE prefwindow SYSTEM "chrome://mitmme/locale/options.dtd">
-<prefwindow id="mitmme-preferences"
+<!DOCTYPE prefwindow SYSTEM "chrome://sce/locale/options.dtd">
+<prefwindow id="sce-preferences"
             xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
             title="&prefwindow.title;"
-            onload= "mitmme.UIOptions.onLoad()">
+            onload= "sce.UIOptions.onLoad()">
     <prefpane id="pane1" label="&pane1.title;">
         <preferences>
             <preference id="pref_bool_enabled"
-                        name="extensions.mitmme.enabled" type="bool"/>
+                        name="extensions.sce.enabled" type="bool"/>
             <preference id="pref_bool_add_temporary_exceptions"
-                        name="extensions.mitmme.add_temporary_exceptions" type="bool"/>
+                        name="extensions.sce.add_temporary_exceptions" type="bool"/>
             <preference id="pref_bool_silent_mode"
-                        name="extensions.mitmme.silent_mode" type="bool"/>
+                        name="extensions.sce.silent_mode" type="bool"/>
         </preferences>
         <checkbox id="ui_enabled" preference="pref_bool_enabled"
                   label="&bool_enabled.label;"
                   accesskey="&bool_enabled.accesskey;"
-                  onclick="mitmme.UIOptions.toggleOthers(this.checked);"/>
+                  onclick="sce.UIOptions.toggleOthers(this.checked);"/>
         <checkbox id="ui_add_temporary_exceptions"
                   preference="pref_bool_add_temporary_exceptions"
                   label="&bool_add_temporary_exceptions.label;"

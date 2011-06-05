@@ -1,8 +1,8 @@
 # The UUID of the extension.
-extension_uuid := mitmme@foudil.fr
+extension_uuid := skipcerterror@foudil.fr
 
 # The name of the profile dir where the extension can be installed.
-profile_dir := mitmme-dev
+profile_dir := skipcerterror-dev
 
 # The zip application to be used.
 ZIP := zip

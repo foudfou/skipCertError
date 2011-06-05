@@ -6,21 +6,21 @@
  * http://developer.mozilla.org/en/XUL_School/JavaScript_Object_Management.html
  */
 
-var EXPORTED_SYMBOLS = [ "mitmme" ];
+var EXPORTED_SYMBOLS = [ "sce" ];
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 /**
- * mitmme namespace.
+ * sce namespace.
  */
-if ("undefined" == typeof(mitmme)) {
-  var mitmme = {
+if ("undefined" == typeof(sce)) {
+  var sce = {
     DEBUG_MODE: true,
   };
 };
 
-mitmme.Debug = {
+sce.Debug = {
 
   _initialized: false,
 
@@ -32,19 +32,19 @@ mitmme.Debug = {
   init: function() {
     if (this._initialized) return;
     this._consoleService = Cc['@mozilla.org/consoleservice;1'].getService(Ci.nsIConsoleService);
-    this.dump("MITTME Debug initialized");
+    this.dump("SkipErrorCert Debug initialized");
     this._initialized = true;
   },
 
   /* Console logging functions */
   /* NOTE: Web Console inappropriates: doesn't catch all messages */
   dump: function(message) { // Debuging function -- prints to javascript console
-    if(!mitmme.DEBUG_MODE) return;
+    if(!sce.DEBUG_MODE) return;
     this._consoleService.logStringMessage(message);
   },
 
   dumpObj: function(obj) {
-    if(!mitmme.DEBUG_MODE) return;
+    if(!sce.DEBUG_MODE) return;
     var str = "";
     for(i in obj) {
       try {
@@ -58,13 +58,13 @@ mitmme.Debug = {
 
 };
 // build it !
-mitmme.Debug.init();
+sce.Debug.init();
 
 
-mitmme.Utils = {
+sce.Utils = {
 
   prefService: Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService)
-    .getBranch("extensions.mitmme."),
+    .getBranch("extensions.sce."),
 
   safeGetName: function(request) {
     return request ? request.name : null;

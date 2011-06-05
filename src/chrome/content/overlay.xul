@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet href="chrome://mitmme/skin/overlay.css" type="text/css"?>
-<!DOCTYPE overlay SYSTEM "chrome://mitmme/locale/overlay.dtd">
-<overlay id="mitmme-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<?xml-stylesheet href="chrome://sce/skin/overlay.css" type="text/css"?>
+<!DOCTYPE overlay SYSTEM "chrome://sce/locale/overlay.dtd">
+<overlay id="sce-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
   <script src="overlay.js"/>
 
   <stringbundleset id="stringbundleset">
-    <stringbundle id="mitmme-strings" src="chrome://mitmme/locale/overlay.properties"/>
+    <stringbundle id="sce-strings" src="chrome://sce/locale/overlay.properties"/>
   </stringbundleset>
 
 </overlay>

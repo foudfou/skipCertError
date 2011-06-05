@@ -20,20 +20,20 @@
  * noticeable) error
  */
 
-Components.utils.import("resource://mitmme/commons.js");
+Components.utils.import("resource://sce/commons.js");
 
-mitmme.Main = {
+sce.Main = {
 
   onLoad: function() {
     // initialization code
     this.initialized = null;
-    this.strings = document.getElementById("mitmme-strings");
+    this.strings = document.getElementById("sce-strings");
 
     try {
       // Set up preference change observer
-      mitmme.Utils.prefService.QueryInterface(Ci.nsIPrefBranch2);
+      sce.Utils.prefService.QueryInterface(Ci.nsIPrefBranch2);
       // must stay out of _toggle()
-      mitmme.Utils.prefService.addObserver("", this, false);
+      sce.Utils.prefService.addObserver("", this, false);
 
       // Get cert services
       this._overrideService =
@@ -47,12 +47,12 @@ mitmme.Main = {
       return false;
     }
 
-    var enabled = mitmme.Utils.prefService.getBoolPref('enabled');
-    mitmme.Debug.dump('enabled: '+enabled);
+    var enabled = sce.Utils.prefService.getBoolPref('enabled');
+    sce.Debug.dump('enabled: '+enabled);
     if (enabled)
       this._toggle(true);
 
-    mitmme.Debug.dump('MITMME LOADED !');
+    sce.Debug.dump('SkipErrorCert LOADED !');
     this.initialized = true;
     return true;
   },
@@ -61,7 +61,7 @@ mitmme.Main = {
   // track of WebProgressListeners as indicated on
   // https://developer.mozilla.org/en/XUL_School/Intercepting_Page_Loads#WebProgressListeners
   _toggle: function (enable) {
-    mitmme.Debug.dump('toggle: '+enable);
+    sce.Debug.dump('toggle: '+enable);
     try {
       if (enable) {
         gBrowser.addTabsProgressListener(this.TabsProgressListener);
@@ -76,22 +76,22 @@ mitmme.Main = {
 
   onQuit: function() {
     // Remove observer
-    mitmme.Utils.prefService.removeObserver("", this);
+    sce.Utils.prefService.removeObserver("", this);
 
     this._toogle(false);
 
-    mitmme.Debug.dump('MITMME UNLOADED !');
+    sce.Debug.dump('SkipErrorCert UNLOADED !');
     this.initialized = false;
   },
 
   observe: function(subject, topic, data) {
     // Observer for pref changes
     if (topic != "nsPref:changed") return;
-    mitmme.Debug.dump('Pref changed: '+data);
+    sce.Debug.dump('Pref changed: '+data);
 
     switch(data) {
     case 'enabled':
-      var enable = mitmme.Utils.prefService.getBoolPref('enabled');
+      var enable = sce.Utils.prefService.getBoolPref('enabled');
       this._toggle(enable);
       break;
     }
@@ -110,7 +110,7 @@ mitmme.Main = {
     // might also be called if an error occurs during network loading.
     onSecurityChange: function (aBrowser, aWebProgress, aRequest, aState) {
       var uri = aBrowser.currentURI;
-      mitmme.Debug.dump("onSecurityChange: uri=" + uri.prePath);
+      sce.Debug.dump("onSecurityChange: uri=" + uri.prePath);
 
       if (!uri.schemeIs("https")) return;
 
@@ -118,29 +118,29 @@ mitmme.Main = {
       var port = uri.port;
       if (port == -1) port = 443; // thx http://gitorious.org/perspectives-notary-server/
       var hostWithPort = uri.host + ":" + port;
-      var SSLStatus = mitmme.Main._recentCertsSvc.getRecentBadCert(hostWithPort);
+      var SSLStatus = sce.Main._recentCertsSvc.getRecentBadCert(hostWithPort);
       if (!SSLStatus) {
-        Components.utils.reportError("MITMME: couldn't get SSLStatus for: " + hostWithPort);
+        Components.utils.reportError("SkipErrorCert: couldn't get SSLStatus for: " + hostWithPort);
         return;
       }
       var cert = SSLStatus.serverCert;
-      mitmme.Debug.dump("SSLStatus");
-      mitmme.Debug.dumpObj(SSLStatus);
-      mitmme.Debug.dump("cert");
-      mitmme.Debug.dumpObj(cert);
+      sce.Debug.dump("SSLStatus");
+      sce.Debug.dumpObj(SSLStatus);
+      sce.Debug.dump("cert");
+      sce.Debug.dumpObj(cert);
 
       // we're only interested in self-signed certs
       cert.QueryInterface(Components.interfaces.nsIX509Cert3);
-      mitmme.Debug.dump("isSelfSigned:" + cert.isSelfSigned);
+      sce.Debug.dump("isSelfSigned:" + cert.isSelfSigned);
       // ...or maybe also by unknown issuer
       var verificationResult = cert.verifyForUsage(Ci.nsIX509Cert.CERT_USAGE_SSLServer);
       switch (verificationResult) {
       case Ci.nsIX509Cert.ISSUER_NOT_TRUSTED: // including self-signed
-        mitmme.Debug.dump("issuer not trusted");
+        sce.Debug.dump("issuer not trusted");
       case Ci.nsIX509Cert.ISSUER_UNKNOWN:
-        mitmme.Debug.dump("issuer unknown");
+        sce.Debug.dump("issuer unknown");
       default:
-        mitmme.Debug.dump("verificationResult: " + verificationResult);
+        sce.Debug.dump("verificationResult: " + verificationResult);
         break;
       }
 
@@ -154,37 +154,37 @@ mitmme.Main = {
 
     _getCertException: function(uri, cert) {
       // if (uri.asciiHost != cert.commonName)
-      //   flags |= mitmme.Main._overrideService.ERROR_MISMATCH;
-      // flags |= mitmme.Main._overrideService.ERROR_UNTRUSTED;
-      // mitmme.Debug.dump("known cert flags: " + flags);
+      //   flags |= sce.Main._overrideService.ERROR_MISMATCH;
+      // flags |= sce.Main._overrideService.ERROR_UNTRUSTED;
+      // sce.Debug.dump("known cert flags: " + flags);
       var outFlags = {};
       var outTempException = {};
-      var knownCert = mitmme.Main._overrideService.hasMatchingOverride(
+      var knownCert = sce.Main._overrideService.hasMatchingOverride(
         uri.asciiHost,
         uri.port,
         cert,
         outFlags,
         outTempException);
-      mitmme.Debug.dump("known cert: " + knownCert);
+      sce.Debug.dump("known cert: " + knownCert);
       return knownCert;
     },
 
     _addCertException: function(SSLStatus, uri, cert) {
       var flags = 0;
       if(SSLStatus.isUntrusted)
-        flags |= mitmme.Main._overrideService.ERROR_UNTRUSTED;
+        flags |= sce.Main._overrideService.ERROR_UNTRUSTED;
       if(SSLStatus.isDomainMismatch)
-        flags |= mitmme.Main._overrideService.ERROR_MISMATCH;
+        flags |= sce.Main._overrideService.ERROR_MISMATCH;
       if(SSLStatus.isNotValidAtThisTime)
-        flags |= mitmme.Main._overrideService.ERROR_TIME;
-      mitmme.Main._overrideService.rememberValidityOverride(
+        flags |= sce.Main._overrideService.ERROR_TIME;
+      sce.Main._overrideService.rememberValidityOverride(
         uri.asciiHost, uri.port,
         cert,
         flags,
-        mitmme.Utils.prefService.getBoolPref("add_temporary_exceptions"));
-      mitmme.Debug.dump("CertEx added");
+        sce.Utils.prefService.getBoolPref("add_temporary_exceptions"));
+      sce.Debug.dump("CertEx added");
       this._certExceptionJustAdded = true;
-      mitmme.Debug.dump("certEx changed: " + this._certExceptionJustAdded);
+      sce.Debug.dump("certEx changed: " + this._certExceptionJustAdded);
     },
 
     // We can't look for this during onLocationChange since at that point the
@@ -197,9 +197,9 @@ mitmme.Main = {
       // aProgress.DOMWindow is the tab/window which triggered the change.
       var originDoc = aWebProgress.DOMWindow.document;
       var originURI = originDoc.documentURI;
-      mitmme.Debug.dump("onStateChange: originURI=" + originURI);
-      var safeRequestName = mitmme.Utils.safeGetName(aRequest);
-      mitmme.Debug.dump("safeRequestName: " + safeRequestName);
+      sce.Debug.dump("onStateChange: originURI=" + originURI);
+      var safeRequestName = sce.Utils.safeGetName(aRequest);
+      sce.Debug.dump("safeRequestName: " + safeRequestName);
 
       // WE JUST CAN'T CANCEL THE REQUEST FOR
       // about:certerr|about:document-onload-blocker
@@ -209,7 +209,7 @@ mitmme.Main = {
 
         if (/^about:certerr/.test(originURI) && this._certExceptionJustAdded) {
           this._certExceptionJustAdded = false; // reset
-          mitmme.Debug.dump("certEx changed: " + this._certExceptionJustAdded);
+          sce.Debug.dump("certEx changed: " + this._certExceptionJustAdded);
           aRequest.cancel(Components.results.NS_BINDING_ABORTED);
           aBrowser.loadURI(this._goto, null, null);
         }
@@ -230,5 +230,5 @@ mitmme.Main = {
 // should be sufficient for a delayed Startup (no need for window.setTimeout())
 // https://developer.mozilla.org/en/Extensions/Performance_best_practices_in_extensions
 // https://developer.mozilla.org/en/XUL_School/JavaScript_Object_Management.html
-window.addEventListener("load", function () { mitmme.Main.onLoad(); }, false);
-window.addEventListener("unload", function(e) { mitmme.Main.onQuit(); }, false);
+window.addEventListener("load", function () { sce.Main.onLoad(); }, false);
+window.addEventListener("unload", function(e) { sce.Main.onQuit(); }, false);
