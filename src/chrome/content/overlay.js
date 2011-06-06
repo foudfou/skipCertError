@@ -57,6 +57,16 @@ sce.Main = {
     return true;
   },
 
+  onQuit: function() {
+    // Remove observer
+    sce.Utils.prefService.removeObserver("", this);
+
+    this._toogle(false);
+
+    sce.Debug.dump('SkipErrorCert UNLOADED !');
+    this.initialized = false;
+  },
+
   // since we are using a TabsProgressListener, it seems we do not need to keep
   // track of WebProgressListeners as indicated on
   // https://developer.mozilla.org/en/XUL_School/Intercepting_Page_Loads#WebProgressListeners
@@ -74,16 +84,6 @@ sce.Main = {
     }
   },
 
-  onQuit: function() {
-    // Remove observer
-    sce.Utils.prefService.removeObserver("", this);
-
-    this._toogle(false);
-
-    sce.Debug.dump('SkipErrorCert UNLOADED !');
-    this.initialized = false;
-  },
-
   observe: function(subject, topic, data) {
     // Observer for pref changes
     if (topic != "nsPref:changed") return;
@@ -95,6 +95,67 @@ sce.Main = {
       this._toggle(enable);
       break;
     }
+  },
+
+  _getCertException: function(uri, cert) {
+    var outFlags = {};
+    var outTempException = {};
+    var knownCert = sce.Main._overrideService.hasMatchingOverride(
+      uri.asciiHost,
+      uri.port,
+      cert,
+      outFlags,
+      outTempException);
+    sce.Debug.dump("known cert: " + knownCert);
+    return knownCert;
+  },
+
+  _addCertException: function(SSLStatus, uri, cert) {
+    var flags = 0;
+    if(SSLStatus.isUntrusted)
+      flags |= sce.Main._overrideService.ERROR_UNTRUSTED;
+    if(SSLStatus.isDomainMismatch)
+      flags |= sce.Main._overrideService.ERROR_MISMATCH;
+    if(SSLStatus.isNotValidAtThisTime)
+      flags |= sce.Main._overrideService.ERROR_TIME;
+    sce.Main._overrideService.rememberValidityOverride(
+      uri.asciiHost, uri.port,
+      cert,
+      flags,
+      sce.Utils.prefService.getBoolPref("add_temporary_exceptions"));
+    sce.Debug.dump("CertEx added");
+    sce.Main.TabsProgressListener._certExceptionJustAdded = true;
+    sce.Debug.dump("certEx changed: " + sce.Main.TabsProgressListener._certExceptionJustAdded);
+
+    sce.Main.TabsProgressListener._goto = uri.spec;    // never reset
+  },
+
+  _parseBadCertFlags: function(flags) {
+    var tag = '';
+    var ns = Ci.nsIX509Cert;
+
+    if (flags == 0) // no flag set
+      tag += 'BYPASS_OK';
+    if (flags & ns.NOT_VERIFIED_UNKNOWN)
+      tag += '| NOT_VERIFIED_UNKNOWN';
+    if (flags & ns.CERT_REVOKED)
+      tag += '|CERT_REVOKED ';
+    if (flags & ns.CERT_EXPIRED)
+      tag += '| CERT_EXPIRED';
+    if (flags & ns.CERT_NOT_TRUSTED)
+      tag += '| CERT_NOT_TRUSTED';
+    if (flags & ns.ISSUER_NOT_TRUSTED)
+      tag += '| ISSUER_NOT_TRUSTED';
+    if (flags & ns.ISSUER_UNKNOWN)
+      tag += '| ISSUER_UNKNOWN';
+    if (flags & ns.VALID_CA)
+      tag += '| VALID_CA';
+    if (flags & ns.USAGE_NOT_ALLOWED)
+      tag += '| USAGE_NOT_ALLOWED';
+    if (flags & SCE_CERT_SELF_SIGNED)
+      tag += '| SELF_SIGNED';
+
+    return tag;
   },
 
   // a TabProgressListner seem more appropriate than an Observer, which only
@@ -130,7 +191,7 @@ sce.Main = {
       sce.Debug.dumpObj(cert);
 
       // check if cert already known/added
-      var knownCert = this._getCertException(uri, cert);
+      var knownCert = sce.Main._getCertException(uri, cert);
       if (knownCert) return;
 
       // Determine cert problems
@@ -160,74 +221,13 @@ sce.Main = {
         break;
       }
       sce.Debug.dump("dontBypassFlags=" + dontBypassFlags
-                     + ", " + this._parseBadCertFlags(dontBypassFlags));
+                     + ", " + sce.Main._parseBadCertFlags(dontBypassFlags));
 
       // Add cert exception (if bypass allowed by options)
       if (dontBypassFlags == 0) // Ci.nsIX509Cert.VERIFIED_OK
-        this._addCertException(SSLStatus, uri, cert);
+        sce.Main._addCertException(SSLStatus, uri, cert);
 
     }, // END onSecurityChange
-
-    _getCertException: function(uri, cert) {
-      var outFlags = {};
-      var outTempException = {};
-      var knownCert = sce.Main._overrideService.hasMatchingOverride(
-        uri.asciiHost,
-        uri.port,
-        cert,
-        outFlags,
-        outTempException);
-      sce.Debug.dump("known cert: " + knownCert);
-      return knownCert;
-    },
-
-    _addCertException: function(SSLStatus, uri, cert) {
-      var flags = 0;
-      if(SSLStatus.isUntrusted)
-        flags |= sce.Main._overrideService.ERROR_UNTRUSTED;
-      if(SSLStatus.isDomainMismatch)
-        flags |= sce.Main._overrideService.ERROR_MISMATCH;
-      if(SSLStatus.isNotValidAtThisTime)
-        flags |= sce.Main._overrideService.ERROR_TIME;
-      sce.Main._overrideService.rememberValidityOverride(
-        uri.asciiHost, uri.port,
-        cert,
-        flags,
-        sce.Utils.prefService.getBoolPref("add_temporary_exceptions"));
-      sce.Debug.dump("CertEx added");
-      this._certExceptionJustAdded = true;
-      sce.Debug.dump("certEx changed: " + this._certExceptionJustAdded);
-
-      this._goto = uri.spec;    // never reset
-    },
-
-    _parseBadCertFlags: function(flags) {
-      var tag = '';
-      var ns = Ci.nsIX509Cert;
-
-      if (flags == ns.VERIFIED_OK) // 0
-        tag += 'VERIFIED_OK';
-      if (flags & ns.NOT_VERIFIED_UNKNOWN)
-        tag += '| NOT_VERIFIED_UNKNOWN';
-      if (flags & ns.CERT_REVOKED)
-        tag += '|CERT_REVOKED ';
-      if (flags & ns.CERT_EXPIRED)
-        tag += '| CERT_EXPIRED';
-      if (flags & ns.CERT_NOT_TRUSTED)
-        tag += '| CERT_NOT_TRUSTED';
-      if (flags & ns.ISSUER_NOT_TRUSTED)
-        tag += '| ISSUER_NOT_TRUSTED';
-      if (flags & ns.ISSUER_UNKNOWN)
-        tag += '| ISSUER_UNKNOWN';
-      if (flags & ns.VALID_CA)
-        tag += '| VALID_CA';
-      if (flags & ns.USAGE_NOT_ALLOWED)
-        tag += '| USAGE_NOT_ALLOWED';
-      if (flags & SCE_CERT_SELF_SIGNED)
-        tag += '| SELF_SIGNED';
-
-      return tag;
-    },
 
     // We can't look for this during onLocationChange since at that point the
     // document URI is not yet the about:-uri of the error page. (browser.js)
