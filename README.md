@@ -17,6 +17,4 @@ At the moment, the extension is working with **limited features**:
 
 * *silent_mode* is always true (no matter the option),
 
-* the cert errors conditions (issuer unknown, self-signed cert) cannot be configured.
-
-These features are planned for a future release.
+This feature is planned for a future release.

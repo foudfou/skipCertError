@@ -129,39 +129,46 @@ sce.Main = {
       sce.Debug.dump("cert");
       sce.Debug.dumpObj(cert);
 
-      // we're only interested in untrusted-signed certs with characteristics
+      // check if cert already known/added
+      var knownCert = this._getCertException(uri, cert);
+      if (knownCert) return;
+
+      // Determine cert problems
+      var dontBypassFlags = 0;
+
+      // we're only interested in certs with characteristics
       // defined in options (self-signed, issuer unknown, ...)
       cert.QueryInterface(Components.interfaces.nsIX509Cert3);
       var isSelfSigned = cert.isSelfSigned;
       sce.Debug.dump("isSelfSigned:" + isSelfSigned);
-      // NOTE: isSelfSigned *implies* ISSUER_UNKNOWN
+      if (isSelfSigned
+          && !sce.Utils.prefService.getBoolPref("bypass_self_signed"))
+        dontBypassFlags |= SCE_CERT_SELF_SIGNED;
+      // NOTE: isSelfSigned *implies* ISSUER_UNKNOWN (should be handled
+      // correctly in option dialog)
+
       var verificationResult = cert.verifyForUsage(Ci.nsIX509Cert.CERT_USAGE_SSLServer);
-      // (VERIFIED_OK,) NOT_VERIFIED_UNKNOWN, CERT_REVOKED, CERT_EXPIRED,
-      // CERT_NOT_TRUSTED, ISSUER_NOT_TRUSTED, ISSUER_UNKNOWN, INVALID_CA,
-      // USAGE_NOT_ALLOWED
       switch (verificationResult) {
       case Ci.nsIX509Cert.ISSUER_NOT_TRUSTED: // including self-signed
         sce.Debug.dump("issuer not trusted");
       case Ci.nsIX509Cert.ISSUER_UNKNOWN:
         sce.Debug.dump("issuer unknown");
+        if (!sce.Utils.prefService.getBoolPref("bypass_issuer_unknown"))
+          dontBypassFlags |= Ci.nsIX509Cert.ISSUER_UNKNOWN;
       default:
         sce.Debug.dump("verificationResult: " + verificationResult);
         break;
       }
+      sce.Debug.dump("dontBypassFlags=" + dontBypassFlags
+                     + ", " + this._parseBadCertFlags(dontBypassFlags));
 
-      // Add cert exception
-      var knownCert = this._getCertException(uri, cert);
-      if (!knownCert)
+      // Add cert exception (if bypass allowed by options)
+      if (dontBypassFlags == 0) // Ci.nsIX509Cert.VERIFIED_OK
         this._addCertException(SSLStatus, uri, cert);
 
-      this._goto = uri.spec;    // never reset
     }, // END onSecurityChange
 
     _getCertException: function(uri, cert) {
-      // if (uri.asciiHost != cert.commonName)
-      //   flags |= sce.Main._overrideService.ERROR_MISMATCH;
-      // flags |= sce.Main._overrideService.ERROR_UNTRUSTED;
-      // sce.Debug.dump("known cert flags: " + flags);
       var outFlags = {};
       var outTempException = {};
       var knownCert = sce.Main._overrideService.hasMatchingOverride(
@@ -190,6 +197,36 @@ sce.Main = {
       sce.Debug.dump("CertEx added");
       this._certExceptionJustAdded = true;
       sce.Debug.dump("certEx changed: " + this._certExceptionJustAdded);
+
+      this._goto = uri.spec;    // never reset
+    },
+
+    _parseBadCertFlags: function(flags) {
+      var tag = '';
+      var ns = Ci.nsIX509Cert;
+
+      if (flags == ns.VERIFIED_OK) // 0
+        tag += 'VERIFIED_OK';
+      if (flags & ns.NOT_VERIFIED_UNKNOWN)
+        tag += '| NOT_VERIFIED_UNKNOWN';
+      if (flags & ns.CERT_REVOKED)
+        tag += '|CERT_REVOKED ';
+      if (flags & ns.CERT_EXPIRED)
+        tag += '| CERT_EXPIRED';
+      if (flags & ns.CERT_NOT_TRUSTED)
+        tag += '| CERT_NOT_TRUSTED';
+      if (flags & ns.ISSUER_NOT_TRUSTED)
+        tag += '| ISSUER_NOT_TRUSTED';
+      if (flags & ns.ISSUER_UNKNOWN)
+        tag += '| ISSUER_UNKNOWN';
+      if (flags & ns.VALID_CA)
+        tag += '| VALID_CA';
+      if (flags & ns.USAGE_NOT_ALLOWED)
+        tag += '| USAGE_NOT_ALLOWED';
+      if (flags & SCE_CERT_SELF_SIGNED)
+        tag += '| SELF_SIGNED';
+
+      return tag;
     },
 
     // We can't look for this during onLocationChange since at that point the

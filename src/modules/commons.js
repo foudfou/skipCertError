@@ -6,10 +6,14 @@
  * http://developer.mozilla.org/en/XUL_School/JavaScript_Object_Management.html
  */
 
-var EXPORTED_SYMBOLS = [ "sce" ];
+var EXPORTED_SYMBOLS = [ "sce", "SCE_CERT_SELF_SIGNED" ];
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
+
+/* SCE Constants */
+const SCE_CERT_SELF_SIGNED = 1 << 8; // completes nsIX509Cert's constants for
+                                     // certificate verification results
 
 /**
  * sce namespace.
