@@ -5,29 +5,52 @@
             xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
             title="&prefwindow.title;"
             onload= "sce.UIOptions.onLoad()">
-    <prefpane id="pane1" label="&pane1.title;">
-        <preferences>
-            <preference id="pref_bool_enabled"
-                        name="extensions.sce.enabled" type="bool"/>
-            <preference id="pref_bool_add_temporary_exceptions"
-                        name="extensions.sce.add_temporary_exceptions" type="bool"/>
-            <preference id="pref_bool_silent_mode"
-                        name="extensions.sce.silent_mode" type="bool"/>
-        </preferences>
-        <checkbox id="ui_enabled" preference="pref_bool_enabled"
-                  label="&bool_enabled.label;"
-                  accesskey="&bool_enabled.accesskey;"
-                  onclick="sce.UIOptions.toggleOthers(this.checked);"/>
-        <checkbox id="ui_add_temporary_exceptions"
-                  preference="pref_bool_add_temporary_exceptions"
-                  label="&bool_add_temporary_exceptions.label;"
-                  accesskey="&bool_add_temporary_exceptions.accesskey;"/>
-        <checkbox id="ui_silent_mode" preference="pref_bool_silent_mode"
-                  label="&bool_silent_mode.label;"
-                  accesskey="&bool_silent_mode.accesskey;"/>
-    </prefpane>
 
-    <script type="application/x-javascript" src="chrome://global/content/nsUserSettings.js" />
-    <script type="application/x-javascript" src="options.js" />
+  <script type="application/x-javascript" src="options.js" />
+
+  <prefpane id="pane1" label="&pane1.title;">
+
+    <preferences>
+      <preference id="pref_bool_enabled"
+                  name="extensions.sce.enabled" type="bool"/>
+      <preference id="pref_bool_add_temporary_exceptions"
+                  name="extensions.sce.add_temporary_exceptions" type="bool"/>
+      <preference id="pref_bool_silent_mode"
+                  name="extensions.sce.silent_mode" type="bool"/>
+      <preference id="pref_bool_cert_issuer_unknown"
+                  name="extensions.sce.cert_issuer_unknown" type="bool"/>
+      <preference id="pref_bool_cert_self_signed"
+                  name="extensions.sce.cert_self_signed" type="bool"/>
+    </preferences>
+
+    <groupbox>
+      <caption>
+      <checkbox id="ui_enabled" preference="pref_bool_enabled"
+                label="&bool_enabled.label;"
+                accesskey="&bool_enabled.accesskey;"
+                onclick="sce.UIOptions.toggleAll(this.checked);"/>
+      </caption>
+      <checkbox id="ui_add_temporary_exceptions"
+                preference="pref_bool_add_temporary_exceptions"
+                label="&bool_add_temporary_exceptions.label;"
+                accesskey="&bool_add_temporary_exceptions.accesskey;"/>
+      <checkbox id="ui_silent_mode" preference="pref_bool_silent_mode"
+                label="&bool_silent_mode.label;"
+                accesskey="&bool_silent_mode.accesskey;"
+                onclick="sce.UIOptions.toggleCertErrorConditions(this.checked);"/>
+      <groupbox id="ui_cert_error_conditions">
+        <caption label="&cert_error_conditions;"/>
+        <checkbox id="ui_cert_issuer_unknown"
+                  preference="pref_bool_cert_issuer_unknown"
+                  label="&bool_cert_issuer_unknown.label;"
+                  accesskey="&bool_cert_issuer_unknown.accesskey;"/>
+        <checkbox id="ui_cert_self_signed"
+                  preference="pref_bool_cert_self_signed"
+                  label="&bool_cert_self_signed.label;"
+                  accesskey="&bool_cert_self_signed.accesskey;"/>
+      </groupbox>
+    </groupbox>
+
+  </prefpane>
 
 </prefwindow>

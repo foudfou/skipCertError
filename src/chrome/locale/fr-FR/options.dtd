@@ -7,3 +7,8 @@
 <!ENTITY bool_silent_mode.label "Mode silencieux (ne demande pas avant
                                  d'ajouter l'exception)">
 <!ENTITY bool_silent_mode.accesskey "S">
+<!ENTITY cert_error_conditions "Outrepasser si le certificat est:">
+<!ENTITY bool_cert_issuer_unknown.label "d'émetteur inconnu">
+<!ENTITY bool_cert_issuer_unknown.accesskey "I">
+<!ENTITY bool_cert_self_signed.label "auto-signé">
+<!ENTITY bool_cert_self_signed.accesskey "G">

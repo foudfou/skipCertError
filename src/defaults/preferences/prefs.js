@@ -5,6 +5,8 @@ pref("extensions.skipcerterror@foudil.fr.description", "chrome://sce/locale/over
 pref("extensions.sce.enabled", true);
 pref("extensions.sce.add_temporary_exceptions", true);
 pref("extensions.sce.silent_mode", true);
+pref("extensions.sce.cert_issuer_unknown", true);
+pref("extensions.sce.cert_self_signed", true);
 
 // Set the environment settings
 pref("browser.ssl_override_behavior", 2);
