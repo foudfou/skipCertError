@@ -129,11 +129,16 @@ sce.Main = {
       sce.Debug.dump("cert");
       sce.Debug.dumpObj(cert);
 
-      // we're only interested in self-signed certs
+      // we're only interested in untrusted-signed certs with characteristics
+      // defined in options (self-signed, issuer unknown, ...)
       cert.QueryInterface(Components.interfaces.nsIX509Cert3);
-      sce.Debug.dump("isSelfSigned:" + cert.isSelfSigned);
-      // ...or maybe also by unknown issuer
+      var isSelfSigned = cert.isSelfSigned;
+      sce.Debug.dump("isSelfSigned:" + isSelfSigned);
+      // NOTE: isSelfSigned *implies* ISSUER_UNKNOWN
       var verificationResult = cert.verifyForUsage(Ci.nsIX509Cert.CERT_USAGE_SSLServer);
+      // (VERIFIED_OK,) NOT_VERIFIED_UNKNOWN, CERT_REVOKED, CERT_EXPIRED,
+      // CERT_NOT_TRUSTED, ISSUER_NOT_TRUSTED, ISSUER_UNKNOWN, INVALID_CA,
+      // USAGE_NOT_ALLOWED
       switch (verificationResult) {
       case Ci.nsIX509Cert.ISSUER_NOT_TRUSTED: // including self-signed
         sce.Debug.dump("issuer not trusted");

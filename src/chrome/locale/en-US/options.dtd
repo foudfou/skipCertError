@@ -6,8 +6,8 @@
 <!ENTITY bool_add_temporary_exceptions.accesskey "T">
 <!ENTITY bool_silent_mode.label "Silent mode (does not prompt before adding exception)">
 <!ENTITY bool_silent_mode.accesskey "S">
-<!ENTITY cert_error_conditions "Bypass error when cert is:">
-<!ENTITY bool_cert_issuer_unknown.label "from unknown issuer">
-<!ENTITY bool_cert_issuer_unknown.accesskey "I">
-<!ENTITY bool_cert_self_signed.label "self-signed">
-<!ENTITY bool_cert_self_signed.accesskey "G">
+<!ENTITY bypass_errors "Bypass error when cert is:">
+<!ENTITY bool_bypass_issuer_unknown.label "from unknown issuer">
+<!ENTITY bool_bypass_issuer_unknown.accesskey "I">
+<!ENTITY bool_bypass_self_signed.label "self-signed">
+<!ENTITY bool_bypass_self_signed.accesskey "G">
