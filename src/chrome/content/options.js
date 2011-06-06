@@ -27,7 +27,6 @@ sce.UIOptions = {
       .childNodes;
     for (var i = 0; i < certErrorCondChildren.length; i++) {
       var node = certErrorCondChildren[i];
-      sce.Debug.dump(node.nodeName);
       node.disabled = !silentChecked;
      }
 

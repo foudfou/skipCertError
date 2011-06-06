@@ -10,14 +10,18 @@
  * - wait for the about:certerr page
  * - load the initially requested URL
  *
+ * BUT STILL: there are situations where we do break FF's internal workflow,
+ * for example during a reload after a silent_mode pref change to 'true',
+ * producing: "no element found .../browser/certerror/aboutCertError.xhtml"
+ *
  * (1) certerror is hardly avoidable since it may be displayed whenever a
  * newsocket is created, see: nsNSSIOLayer.cpp: dialogs->ShowCertError,
  * nsNSSBadCertHandler, nsSSLIOLayerNewSocket,
  * ./netwerk/base/src/nsSocketTransport2.cpp
  *
- * (2) reloading the requested https page works, but is not very clean since it
- * shortcuts the internal request to about:certerr, and produces a (not too
- * noticeable) error
+ * (2) a raw reload of the requested https page works, but is not very clean
+ * since it shortcuts the internal request to about:certerr, and produces a
+ * (not too noticeable) error
  */
 
 Components.utils.import("resource://sce/commons.js");
@@ -158,6 +162,31 @@ sce.Main = {
     return tag;
   },
 
+  notify: function(browser) {
+		var priority = "PRIORITY_INFO_LOW";
+		var message = sce.Main.strings.getString("helloMessage");
+
+		var buttons =
+      [{
+			   accessKey : "",
+			   label: "This is cool",
+			   accessKey : "",
+			   callback: function() {
+				   window.alert("GREAT!");
+			   }
+		   }];
+
+		try{
+			var notificationBox = browser.getNotificationBox();
+		}
+		catch(e){
+			return;
+		}
+
+		var notificationBox = browser.getNotificationBox();
+		notificationBox.appendNotification(message, "SkipCertError", null, notificationBox[priority], buttons);
+  },
+
   // a TabProgressListner seem more appropriate than an Observer, which only
   // gets notified for document requests (not internal requests)
   TabsProgressListener: {
@@ -174,6 +203,12 @@ sce.Main = {
       sce.Debug.dump("onSecurityChange: uri=" + uri.prePath);
 
       if (!uri.schemeIs("https")) return;
+
+      // TODO: we may need to collect cert info before notifying
+      if (!sce.Utils.prefService.getBoolPref('silent_mode')) {
+        sce.Main._willNotify = true;
+        return;
+      }
 
       // retrieve bad cert from nsIRecentBadCertsService
       var port = uri.port;
@@ -247,7 +282,14 @@ sce.Main = {
       // about:certerr|about:document-onload-blocker
       // ...SO WE WAIT FOR IT !
       if (aStateFlags & (Ci.nsIWebProgressListener.STATE_STOP
-                         |Ci.nsIWebProgressListener.STATE_IS_REQUEST)) {
+                          |Ci.nsIWebProgressListener.STATE_IS_REQUEST)) {
+
+        if (sce.Main._willNotify) {
+          sce.Debug.dump("willNotify");
+          sce.Main._willNotify = false; // reset
+          sce.Main.notify(window.gBrowser);
+          return;
+        }
 
         if (/^about:certerr/.test(originURI) && this._certExceptionJustAdded) {
           this._certExceptionJustAdded = false; // reset
