@@ -162,29 +162,45 @@ sce.Main = {
     return tag;
   },
 
-  notify: function(browser) {
-		var priority = "PRIORITY_INFO_LOW";
-		var message = sce.Main.strings.getString("helloMessage");
+  // TODO
+  notify: function(abrowser, cert) {
+    // TODO: return if notification already displayed
 
+    var priority = 'PRIORITY_INFO_LOW';
+		var message = sce.Main.strings.getString("helloMessage");
+    var certDialog = Cc["@mozilla.org/nsCertificateDialogs;1"]
+      .getService(Ci.nsICertificateDialogs);
 		var buttons =
       [{
+         popup: null,
+			   label: "Add cert exception",
 			   accessKey : "",
-			   label: "This is cool",
+			   callback: function(notificationElt, desc) {
+           // TODO: add cert exception
+           // prevent notificationBox.close() -- see
+           // notification.xml:_doButtonCommand
+           return true;
+			   }
+		   },
+       {
+			   label: "View cert",
 			   accessKey : "",
 			   callback: function() {
-				   window.alert("GREAT!");
+           certDialog.viewCert(window, cert);
+           return true;
 			   }
 		   }];
 
-		try{
-			var notificationBox = browser.getNotificationBox();
-		}
-		catch(e){
-			return;
-		}
-
-		var notificationBox = browser.getNotificationBox();
-		notificationBox.appendNotification(message, "SkipCertError", null, notificationBox[priority], buttons);
+    // display notification on the correct tab !
+		var mainWindow = window
+      .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
+      .QueryInterface(Ci.nsIDocShellTreeItem).rootTreeItem
+      .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindow);
+    var notificationBox = mainWindow.gBrowser.getNotificationBox(abrowser);
+    var notification = notificationBox.appendNotification(
+      message, "SkipCertError", null, notificationBox[priority], buttons);
+    notification.persistence = 3; // arbitrary number, just so bar sticks
+                                  // around for a bit
   },
 
   // a TabProgressListner seem more appropriate than an Observer, which only
@@ -203,12 +219,6 @@ sce.Main = {
       sce.Debug.dump("onSecurityChange: uri=" + uri.prePath);
 
       if (!uri.schemeIs("https")) return;
-
-      // TODO: we may need to collect cert info before notifying
-      if (!sce.Utils.prefService.getBoolPref('silent_mode')) {
-        sce.Main._willNotify = true;
-        return;
-      }
 
       // retrieve bad cert from nsIRecentBadCertsService
       var port = uri.port;
@@ -234,7 +244,7 @@ sce.Main = {
 
       // we're only interested in certs with characteristics
       // defined in options (self-signed, issuer unknown, ...)
-      cert.QueryInterface(Components.interfaces.nsIX509Cert3);
+      cert.QueryInterface(Ci.nsIX509Cert3);
       var isSelfSigned = cert.isSelfSigned;
       sce.Debug.dump("isSelfSigned:" + isSelfSigned);
       if (isSelfSigned
@@ -258,8 +268,16 @@ sce.Main = {
       sce.Debug.dump("dontBypassFlags=" + dontBypassFlags
                      + ", " + sce.Main._parseBadCertFlags(dontBypassFlags));
 
+      // trigger notification
+      if (!sce.Utils.prefService.getBoolPref('silent_mode')) {
+        sce.Main._willNotify = true;
+        sce.Debug.dump("willNotify");
+        sce.Main._cert = cert;  // TODO: use specific object for all these vars
+        return;
+      }
+
       // Add cert exception (if bypass allowed by options)
-      if (dontBypassFlags == 0) // Ci.nsIX509Cert.VERIFIED_OK
+      if (dontBypassFlags == 0)
         sce.Main._addCertException(SSLStatus, uri, cert);
 
     }, // END onSecurityChange
@@ -287,7 +305,7 @@ sce.Main = {
         if (sce.Main._willNotify) {
           sce.Debug.dump("willNotify");
           sce.Main._willNotify = false; // reset
-          sce.Main.notify(window.gBrowser);
+          sce.Main.notify(aBrowser, sce.Main._cert);
           return;
         }
 
