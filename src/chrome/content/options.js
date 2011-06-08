@@ -13,13 +13,8 @@ sce.UIOptions = {
 
   toggleDisable_All: function(enabledChecked) {
     document.getElementById('ui_add_temporary_exceptions').disabled = !enabledChecked;
-    document.getElementById('ui_silent_mode').disabled = !enabledChecked;
-    if (enabledChecked) {
-      this.toggleDisable_BypassErrors(document.getElementById('ui_silent_mode').checked);
-      this.toggleCheck_BypassIssuerUnknown(
-        document.getElementById('ui_bypass_self_signed').checked);
-    } else
-      this.toggleDisable_BypassErrors(false);
+    document.getElementById('ui_notify').disabled = !enabledChecked;
+    this.toggleDisable_BypassErrors(enabledChecked);
    },
 
   toggleDisable_BypassErrors: function(silentChecked) {

@@ -15,8 +15,8 @@
                   name="extensions.sce.enabled" type="bool"/>
       <preference id="pref_bool_add_temporary_exceptions"
                   name="extensions.sce.add_temporary_exceptions" type="bool"/>
-      <preference id="pref_bool_silent_mode"
-                  name="extensions.sce.silent_mode" type="bool"/>
+      <preference id="pref_bool_notify"
+                  name="extensions.sce.notify" type="bool"/>
       <preference id="pref_bool_bypass_issuer_unknown"
                   name="extensions.sce.bypass_issuer_unknown" type="bool"/>
       <preference id="pref_bool_bypass_self_signed"
@@ -34,10 +34,9 @@
                 preference="pref_bool_add_temporary_exceptions"
                 label="&bool_add_temporary_exceptions.label;"
                 accesskey="&bool_add_temporary_exceptions.accesskey;"/>
-      <checkbox id="ui_silent_mode" preference="pref_bool_silent_mode"
-                label="&bool_silent_mode.label;"
-                accesskey="&bool_silent_mode.accesskey;"
-                onclick="sce.UIOptions.toggleDisable_BypassErrors(!this.checked);"/>
+      <checkbox id="ui_notify" preference="pref_bool_notify"
+                label="&bool_notify.label;"
+                accesskey="&bool_notify.accesskey;"/>
       <groupbox id="ui_bypass_errors">
         <caption label="&bypass_errors;"/>
         <checkbox id="ui_bypass_issuer_unknown"

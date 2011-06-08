@@ -28,6 +28,7 @@ sce.Main = {
     // initialization code
     this.initialized = null;
     this.strings = document.getElementById("sce-strings");
+    this.notification = {};
     this.stash = {};
 
     try {
@@ -123,7 +124,7 @@ sce.Main = {
       uri.asciiHost, uri.port,
       cert,
       flags,
-      sce.Utils.prefService.getBoolPref("add_temporary_exceptions"));
+      sce.Utils.prefService.getBoolPref('add_temporary_exceptions'));
     sce.Debug.dump("CertEx added");
     sce.Main.TabsProgressListener._certExceptionJustAdded = true;
     sce.Debug.dump("certEx changed: " + sce.Main.TabsProgressListener._certExceptionJustAdded);
@@ -135,36 +136,31 @@ sce.Main = {
     var tag = '';
     var ns = Ci.nsIX509Cert;
 
-    if (flags == 0) // no flag set
-      tag += 'BYPASS_OK';
     if (flags & ns.NOT_VERIFIED_UNKNOWN)
-      tag += '| NOT_VERIFIED_UNKNOWN';
+      tag += ', ' + sce.Main.strings.getString('NOT_VERIFIED_UNKNOWN');
     if (flags & ns.CERT_REVOKED)
-      tag += '|CERT_REVOKED ';
+      tag += ', ' + sce.Main.strings.getString('CERT_REVOKED');
     if (flags & ns.CERT_EXPIRED)
-      tag += '| CERT_EXPIRED';
+      tag += ', ' + sce.Main.strings.getString('CERT_EXPIRED');
     if (flags & ns.CERT_NOT_TRUSTED)
-      tag += '| CERT_NOT_TRUSTED';
+      tag += ', ' + sce.Main.strings.getString('CERT_NOT_TRUSTED');
     if (flags & ns.ISSUER_NOT_TRUSTED)
-      tag += '| ISSUER_NOT_TRUSTED';
+      tag += ', ' + sce.Main.strings.getString('ISSUER_NOT_TRUSTED');
     if (flags & ns.ISSUER_UNKNOWN)
-      tag += '| ISSUER_UNKNOWN';
-    if (flags & ns.VALID_CA)
-      tag += '| VALID_CA';
+      tag += ', ' + sce.Main.strings.getString('ISSUER_UNKNOWN');
+    if (flags & ns.INVALID_CA)
+      tag += ', ' + sce.Main.strings.getString('INVALID_CA');
     if (flags & ns.USAGE_NOT_ALLOWED)
-      tag += '| USAGE_NOT_ALLOWED';
+      tag += ', ' + sce.Main.strings.getString('USAGE_NOT_ALLOWED');
     if (flags & SCE_CERT_SELF_SIGNED)
-      tag += '| SELF_SIGNED';
+      tag += ', ' + sce.Main.strings.getString('CERT_SELF_SIGNED');
+
+    if (tag != "") tag = tag.substr(2);
 
     return tag;
   },
 
   notify: function(abrowser) {
-
-    if (!sce.Main.stash.cert) {
-      Components.utils.reportError("SkipCertError: couldn't get SSLStatus for: " + hostWithPort);
-      return;
-    }
 
     // find the correct tab to display notification on
 		var mainWindow = window
@@ -172,8 +168,7 @@ sce.Main = {
       .QueryInterface(Ci.nsIDocShellTreeItem).rootTreeItem
       .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindow);
     var notificationBox = mainWindow.gBrowser.getNotificationBox(abrowser);
-
-    sce.Main.stash.notificationBox = notificationBox;
+    sce.Main.stash.notificationBox = notificationBox; // stash for later use
 
     // check notification not already here
     if (notificationBox.getNotificationWithValue('SkipCertError')) {
@@ -183,40 +178,33 @@ sce.Main = {
 
     // build notification
     var priority = 'PRIORITY_INFO_LOW'; // notificationBox.PRIORITY_INFO_LOW not working ??
-		var message = sce.Main.strings.getString("notificationMessage");
-    var certDialog = Cc["@mozilla.org/nsCertificateDialogs;1"]
-      .getService(Ci.nsICertificateDialogs);
-		var buttons =
-      [{
-         popup: null,
-			   label: sce.Main.strings.getString("addCertExceptionButton"), // "Add cert exception",
-			   accessKey : "A",
-			   callback: function(notificationElt, desc) {
-           // TODO: add cert exception
-			   }
-		   },
-       {
-			   label: sce.Main.strings.getString("viewCertButton"), // "View cert",
-			   accessKey : "C",
-			   callback: function() {
-           certDialog.viewCert(window, sce.Main.stash.cert);
-           return true; // prevent notificationBox.close() -- see
-                        // notification.xml:_doButtonCommand
-			   }
-		   }];
+    var temporaryException = sce.Utils.prefService.getBoolPref('add_temporary_exceptions') ?
+      sce.Main.strings.getString('temporaryException') : sce.Main.strings.getString('permanentException');
+    var msgArgs = [];
+    switch (sce.Main.notification.type) {
+    case 'exceptionAdded':
+      msgArgs = [temporaryException, sce.Main.notification.host];
+      break;
+    case 'exceptionNotAdded':
+      msgArgs = [sce.Main.notification.dontBypassFlags];
+      break;
+    default:
+      break;
+    }
+		var message = sce.Main.strings.getFormattedString(
+      sce.Main.notification.type, msgArgs);
 
     // appendNotification( label , value , image , priority , buttons )
     var notification = notificationBox.appendNotification(
-      message, 'SkipCertError', null, notificationBox[priority], buttons);
-    notification.persistence = 3; // arbitrary number, just so bar sticks
-                                  // around for a bit
+      message, 'SkipCertError', null, notificationBox[priority], null);
 
-    // close notificatioBox if needed
+    // close notificatioBox if needed (will close automatically if reload)
     var exceptionDialogButton = abrowser.webProgress.DOMWindow
       .document.getElementById('exceptionDialogButton');
     exceptionDialogButton.addEventListener(
       "click", sce.Main.exceptionDialogButtonOnClick, false);
-    // close notification also done onLocationChange
+
+    sce.Main.notification = {}; // reset
   },
 
   exceptionDialogButtonOnClick: function(event) {
@@ -232,7 +220,7 @@ sce.Main = {
     sce.Main.stash.notificationBox = null;
   },
 
-  // a TabProgressListner seem more appropriate than an Observer, which only
+  // a TabProgressListner seems more appropriate than an Observer, which only
   // gets notified for document requests (not internal requests)
   TabsProgressListener: {
     // can't see the necessity of having QueryInterface(aIID) implemented...
@@ -256,6 +244,7 @@ sce.Main = {
       var port = uri.port;
       if (port == -1) port = 443; // thx http://gitorious.org/perspectives-notary-server/
       var hostWithPort = uri.host + ":" + port;
+      sce.Main.notification.host = uri.host;
       var SSLStatus = sce.Main._recentCertsSvc.getRecentBadCert(hostWithPort);
       if (!SSLStatus) {
         Components.utils.reportError("SkipCertError: couldn't get SSLStatus for: " + hostWithPort);
@@ -297,25 +286,44 @@ sce.Main = {
         sce.Debug.dump("verificationResult: " + verificationResult);
         break;
       }
+      var dontBypassTag = sce.Main._parseBadCertFlags(dontBypassFlags);
       sce.Debug.dump("dontBypassFlags=" + dontBypassFlags
-                     + ", " + sce.Main._parseBadCertFlags(dontBypassFlags));
+                     + ", " + dontBypassTag);
 
       // trigger notification
-      if (!sce.Utils.prefService.getBoolPref('silent_mode')) {
-        sce.Main._willNotify = true;
+      if (sce.Utils.prefService.getBoolPref('notify')) {
+        sce.Main.notification.willNotify = true;
         sce.Debug.dump("onSecurityChange: willNotify");
-        sce.Main.stash.cert = cert;
-        return;
       }
 
       // Add cert exception (if bypass allowed by options)
-      if (dontBypassFlags == 0)
+      if (dontBypassFlags == 0) {
         sce.Main._addCertException(SSLStatus, uri, cert);
+        sce.Main.notification.type = 'exceptionAdded';
+      } else {
+        sce.Main.notification.type = 'exceptionNotAdded';
+        sce.Main.notification.dontBypassFlags = dontBypassTag;
+      }
 
     }, // END onSecurityChange
 
-    // We can't look for this during onLocationChange since at that point the
-    // document URI is not yet the about:-uri of the error page. (browser.js)
+    _getTabIndex: function(abrowser) {
+      var tabbrowser = abrowser.getTabBrowser();
+      var tabContainer = tabbrowser.tabs;
+
+      var tabIndex = null;
+      for (var i = 0; i < tabContainer.length; ++i) {
+        if (abrowser == tabbrowser.getBrowserAtIndex(i)) {
+          tabIndex = i;
+          break;
+        }
+      }
+
+      return tabIndex;
+    },
+
+    // "We can't look for this during onLocationChange since at that point the
+    // document URI is not yet the about:-uri of the error page." (browser.js)
     // it *seems* that the scenario is as follows: badcert (onSecurityChange)
     // leading to about:blank, which triggers request of
     // about:document-onload-blocker, leading to about:certerror (called at
@@ -325,7 +333,7 @@ sce.Main = {
       // aProgress.DOMWindow is the tab/window which triggered the change.
       var originDoc = aWebProgress.DOMWindow.document;
       var originURI = originDoc.documentURI;
-      sce.Debug.dump("onStateChange: originURI=" + originURI);
+      sce.Debug.dump("onStateChange " + this._getTabIndex(aBrowser) + ": originURI=" + originURI);
       var safeRequestName = sce.Utils.safeGetName(aRequest);
       sce.Debug.dump("safeRequestName: " + safeRequestName);
 
@@ -337,32 +345,40 @@ sce.Main = {
 
         if (/^about:certerr/.test(originURI)) {
           this._certerrorCount++;
+          sce.Debug.dump("certerrorCount=" + this._certerrorCount);
 
-          if (this._certerrorCount < 2)
-            return; // wait for last (?) call
-
-          if (sce.Main._willNotify) {
-            sce.Debug.dump("onStateChange: willNotify");
-            sce.Main._willNotify = false; // reset
-            sce.Main.notify(aBrowser);
-            return;
+          if (this._certerrorCount < 2) {
+            if (aStateFlags & (Ci.nsIWebProgressListener.STATE_STOP
+                               |Ci.nsIWebProgressListener.STATE_RESTORING)) {
+              // experienced only one certerr call during sessoin restore
+              sce.Debug.dump("restoring");
+            } else {
+              sce.Debug.dump("certerrorCount not sufficient");
+              return; // wait for last (?) call
+            }
           }
 
           if (this._certExceptionJustAdded) {
             this._certExceptionJustAdded = false; // reset
             sce.Debug.dump("certEx changed: " + this._certExceptionJustAdded);
+
             aRequest.cancel(Components.results.NS_BINDING_ABORTED);
             aBrowser.loadURI(this._goto, null, null);
           }
+
+          if (sce.Main.notification.willNotify) {
+            sce.Debug.dump("onStateChange: willNotify");
+            sce.Main.notify.willNotify = false; // reset
+            sce.Main.notify(aBrowser);
+          }
+
         }
 
       }
 
     }, // END onStateChange
 
-    onLocationChange: function(aBrowser, aWebProgress, aRequest, aLocation) {
-      sce.Main._closeNotificationMaybe();
-    },
+    onLocationChange: function(aBrowser, aWebProgress, aRequest, aLocation) { },
 
     onProgressChange: function() { },
     onStatusChange: function() { },

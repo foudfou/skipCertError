@@ -4,9 +4,8 @@
 <!ENTITY bool_enabled.accesskey "E">
 <!ENTITY bool_add_temporary_exceptions.label "Ajouter les exceptions comme temporaires">
 <!ENTITY bool_add_temporary_exceptions.accesskey "T">
-<!ENTITY bool_silent_mode.label "Mode silencieux (ne demande pas avant
-                                 d'ajouter l'exception)">
-<!ENTITY bool_silent_mode.accesskey "S">
+<!ENTITY bool_notify.label "Notifications">
+<!ENTITY bool_notify.accesskey "N">
 <!ENTITY bypass_errors "Outrepasser si le certificat est:">
 <!ENTITY bool_bypass_issuer_unknown.label "d'émetteur inconnu">
 <!ENTITY bool_bypass_issuer_unknown.accesskey "I">
