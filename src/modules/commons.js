@@ -36,7 +36,7 @@ sce.Debug = {
   init: function() {
     if (this._initialized) return;
     this._consoleService = Cc['@mozilla.org/consoleservice;1'].getService(Ci.nsIConsoleService);
-    this.dump("SkipErrorCert Debug initialized");
+    this.dump("SkipCertError Debug initialized");
     this._initialized = true;
   },
 

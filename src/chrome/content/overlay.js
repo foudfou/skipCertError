@@ -10,10 +10,6 @@
  * - wait for the about:certerr page
  * - load the initially requested URL
  *
- * BUT STILL: there are situations where we do break FF's internal workflow,
- * for example during a reload after a silent_mode pref change to 'true',
- * producing: "no element found .../browser/certerror/aboutCertError.xhtml"
- *
  * (1) certerror is hardly avoidable since it may be displayed whenever a
  * newsocket is created, see: nsNSSIOLayer.cpp: dialogs->ShowCertError,
  * nsNSSBadCertHandler, nsSSLIOLayerNewSocket,
@@ -32,6 +28,7 @@ sce.Main = {
     // initialization code
     this.initialized = null;
     this.strings = document.getElementById("sce-strings");
+    this.stash = {};
 
     try {
       // Set up preference change observer
@@ -56,7 +53,7 @@ sce.Main = {
     if (enabled)
       this._toggle(true);
 
-    sce.Debug.dump('SkipErrorCert LOADED !');
+    sce.Debug.dump('SkipCertError LOADED !');
     this.initialized = true;
     return true;
   },
@@ -67,7 +64,7 @@ sce.Main = {
 
     this._toogle(false);
 
-    sce.Debug.dump('SkipErrorCert UNLOADED !');
+    sce.Debug.dump('SkipCertError UNLOADED !');
     this.initialized = false;
   },
 
@@ -162,45 +159,77 @@ sce.Main = {
     return tag;
   },
 
-  // TODO
-  notify: function(abrowser, cert) {
-    // TODO: return if notification already displayed
+  notify: function(abrowser) {
 
-    var priority = 'PRIORITY_INFO_LOW';
-		var message = sce.Main.strings.getString("helloMessage");
-    var certDialog = Cc["@mozilla.org/nsCertificateDialogs;1"]
-      .getService(Ci.nsICertificateDialogs);
-		var buttons =
-      [{
-         popup: null,
-			   label: "Add cert exception",
-			   accessKey : "",
-			   callback: function(notificationElt, desc) {
-           // TODO: add cert exception
-           // prevent notificationBox.close() -- see
-           // notification.xml:_doButtonCommand
-           return true;
-			   }
-		   },
-       {
-			   label: "View cert",
-			   accessKey : "",
-			   callback: function() {
-           certDialog.viewCert(window, cert);
-           return true;
-			   }
-		   }];
+    if (!sce.Main.stash.cert) {
+      Components.utils.reportError("SkipCertError: couldn't get SSLStatus for: " + hostWithPort);
+      return;
+    }
 
-    // display notification on the correct tab !
+    // find the correct tab to display notification on
 		var mainWindow = window
       .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebNavigation)
       .QueryInterface(Ci.nsIDocShellTreeItem).rootTreeItem
       .QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIDOMWindow);
     var notificationBox = mainWindow.gBrowser.getNotificationBox(abrowser);
+
+    sce.Main.stash.notificationBox = notificationBox;
+
+    // check notification not already here
+    if (notificationBox.getNotificationWithValue('SkipCertError')) {
+      sce.Debug.dump("notificationBox already here");
+      return;
+    }
+
+    // build notification
+    var priority = 'PRIORITY_INFO_LOW'; // notificationBox.PRIORITY_INFO_LOW not working ??
+		var message = sce.Main.strings.getString("notificationMessage");
+    var certDialog = Cc["@mozilla.org/nsCertificateDialogs;1"]
+      .getService(Ci.nsICertificateDialogs);
+		var buttons =
+      [{
+         popup: null,
+			   label: sce.Main.strings.getString("addCertExceptionButton"), // "Add cert exception",
+			   accessKey : "A",
+			   callback: function(notificationElt, desc) {
+           // TODO: add cert exception
+			   }
+		   },
+       {
+			   label: sce.Main.strings.getString("viewCertButton"), // "View cert",
+			   accessKey : "C",
+			   callback: function() {
+           certDialog.viewCert(window, sce.Main.stash.cert);
+           return true; // prevent notificationBox.close() -- see
+                        // notification.xml:_doButtonCommand
+			   }
+		   }];
+
+    // appendNotification( label , value , image , priority , buttons )
     var notification = notificationBox.appendNotification(
-      message, "SkipCertError", null, notificationBox[priority], buttons);
+      message, 'SkipCertError', null, notificationBox[priority], buttons);
     notification.persistence = 3; // arbitrary number, just so bar sticks
                                   // around for a bit
+
+    // close notificatioBox if needed
+    var exceptionDialogButton = abrowser.webProgress.DOMWindow
+      .document.getElementById('exceptionDialogButton');
+    exceptionDialogButton.addEventListener(
+      "click", sce.Main.exceptionDialogButtonOnClick, false);
+    // close notification also done onLocationChange
+  },
+
+  exceptionDialogButtonOnClick: function(event) {
+    sce.Main._closeNotificationMaybe();
+    event.originalTarget.removeEventListener(
+      "click", sce.Main.exceptionDialogButtonOnClick, false);
+  },
+
+  _closeNotificationMaybe: function() {
+    if (!sce.Main.stash.notificationBox)
+      return;
+    sce.Main.stash.notificationBox.currentNotification.close();
+    sce.Main.stash.notificationBox = null;
   },
 
   // a TabProgressListner seem more appropriate than an Observer, which only
@@ -210,6 +239,7 @@ sce.Main = {
 
     _certExceptionJustAdded: null, // used for communication btw
                                    // onSecurityChange, onStateChange, ...
+    _certerrorCount: 0,            // certerr seems called more than once...
 
     // This method will be called on security transitions (eg HTTP -> HTTPS,
     // HTTPS -> HTTP, FOO -> HTTPS) and *after document load* completion. It
@@ -220,13 +250,15 @@ sce.Main = {
 
       if (!uri.schemeIs("https")) return;
 
+      this._certerrorCount = 0; // reset
+
       // retrieve bad cert from nsIRecentBadCertsService
       var port = uri.port;
       if (port == -1) port = 443; // thx http://gitorious.org/perspectives-notary-server/
       var hostWithPort = uri.host + ":" + port;
       var SSLStatus = sce.Main._recentCertsSvc.getRecentBadCert(hostWithPort);
       if (!SSLStatus) {
-        Components.utils.reportError("SkipErrorCert: couldn't get SSLStatus for: " + hostWithPort);
+        Components.utils.reportError("SkipCertError: couldn't get SSLStatus for: " + hostWithPort);
         return;
       }
       var cert = SSLStatus.serverCert;
@@ -271,8 +303,8 @@ sce.Main = {
       // trigger notification
       if (!sce.Utils.prefService.getBoolPref('silent_mode')) {
         sce.Main._willNotify = true;
-        sce.Debug.dump("willNotify");
-        sce.Main._cert = cert;  // TODO: use specific object for all these vars
+        sce.Debug.dump("onSecurityChange: willNotify");
+        sce.Main.stash.cert = cert;
         return;
       }
 
@@ -286,7 +318,8 @@ sce.Main = {
     // document URI is not yet the about:-uri of the error page. (browser.js)
     // it *seems* that the scenario is as follows: badcert (onSecurityChange)
     // leading to about:blank, which triggers request of
-    // about:document-onload-blocker, leading to prevURI=about:certerror
+    // about:document-onload-blocker, leading to about:certerror (called at
+    // least twice)
     onStateChange: function (aBrowser, aWebProgress, aRequest, aStateFlags, aStatus) {
 
       // aProgress.DOMWindow is the tab/window which triggered the change.
@@ -302,25 +335,35 @@ sce.Main = {
       if (aStateFlags & (Ci.nsIWebProgressListener.STATE_STOP
                           |Ci.nsIWebProgressListener.STATE_IS_REQUEST)) {
 
-        if (sce.Main._willNotify) {
-          sce.Debug.dump("willNotify");
-          sce.Main._willNotify = false; // reset
-          sce.Main.notify(aBrowser, sce.Main._cert);
-          return;
-        }
+        if (/^about:certerr/.test(originURI)) {
+          this._certerrorCount++;
 
-        if (/^about:certerr/.test(originURI) && this._certExceptionJustAdded) {
-          this._certExceptionJustAdded = false; // reset
-          sce.Debug.dump("certEx changed: " + this._certExceptionJustAdded);
-          aRequest.cancel(Components.results.NS_BINDING_ABORTED);
-          aBrowser.loadURI(this._goto, null, null);
+          if (this._certerrorCount < 2)
+            return; // wait for last (?) call
+
+          if (sce.Main._willNotify) {
+            sce.Debug.dump("onStateChange: willNotify");
+            sce.Main._willNotify = false; // reset
+            sce.Main.notify(aBrowser);
+            return;
+          }
+
+          if (this._certExceptionJustAdded) {
+            this._certExceptionJustAdded = false; // reset
+            sce.Debug.dump("certEx changed: " + this._certExceptionJustAdded);
+            aRequest.cancel(Components.results.NS_BINDING_ABORTED);
+            aBrowser.loadURI(this._goto, null, null);
+          }
         }
 
       }
 
     }, // END onStateChange
 
-    onLocationChange: function(aBrowser, aWebProgress, aRequest, aLocation) { },
+    onLocationChange: function(aBrowser, aWebProgress, aRequest, aLocation) {
+      sce.Main._closeNotificationMaybe();
+    },
+
     onProgressChange: function() { },
     onStatusChange: function() { },
 
@@ -332,5 +375,5 @@ sce.Main = {
 // should be sufficient for a delayed Startup (no need for window.setTimeout())
 // https://developer.mozilla.org/en/Extensions/Performance_best_practices_in_extensions
 // https://developer.mozilla.org/en/XUL_School/JavaScript_Object_Management.html
-window.addEventListener("load", function () { sce.Main.onLoad(); }, false);
+window.addEventListener("load", function (e) { sce.Main.onLoad(); }, false);
 window.addEventListener("unload", function(e) { sce.Main.onQuit(); }, false);
