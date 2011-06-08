@@ -11,7 +11,8 @@
     <em:contributor>Johnathan Nightingale (MITMME original author)</em:contributor>
     <em:description>This Firefox extension enables skipping the SSL/TLS certificate error page, for specific configurable conditions, like self-signed cert or unknown issuer, by adding a temporary exception to FF's cert DB.</em:description>
     <em:optionsURL>chrome://sce/content/options.xul</em:optionsURL>
-    <em:iconURL>chrome://sce/skin/logo.png</em:iconURL>
+    <em:iconURL>chrome://sce/skin/icon48.png</em:iconURL>
+    <em:icon64URL>chrome://sce/skin/icon64.png</em:icon64URL>
     <em:targetApplication>
       <Description>
         <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id> <!-- Firefox -->
