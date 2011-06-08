@@ -33,6 +33,9 @@ else
   endif
 endif
 
+# The license file
+license := LICENSE
+
 # The install.rdf file.
 install_rdf := install.rdf
 
@@ -63,7 +66,8 @@ modules_sources := $(wildcard $(modules_dir)/*.js)
 
 # The sources for the XPI file. Uses variables defined in the included
 # Makefiles.
-xpi_includes := $(install_rdf) \
+xpi_includes := $(license) \
+             $(install_rdf) \
              $(chrome_manifest) \
              $(preferences_dir)/prefs.js \
              $(chrome_sources) \
