@@ -7,7 +7,7 @@
  * internal request to about:certerr gracefully (2), we:
  *
  * - add the cert exception
- * - wait for the about:certerr page
+ * - wait for the full load of the about:certerr page (that's the tricky part)
  * - load the initially requested URL
  *
  * (1) certerror is hardly avoidable since it may be displayed whenever a
@@ -17,7 +17,8 @@
  *
  * (2) a raw reload of the requested https page works, but is not very clean
  * since it shortcuts the internal request to about:certerr, and produces a
- * (not too noticeable) error
+ * harmless *no element found* error (displayed shortly and not too noticeable
+ * though)
  */
 
 Components.utils.import("resource://sce/commons.js");
@@ -220,6 +221,7 @@ sce.Main = {
     sce.Main.stash.notificationBox = null;
   },
 
+
   // a TabProgressListner seems more appropriate than an Observer, which only
   // gets notified for document requests (not internal requests)
   TabsProgressListener: {
@@ -323,8 +325,8 @@ sce.Main = {
 
     // "We can't look for this during onLocationChange since at that point the
     // document URI is not yet the about:-uri of the error page." (browser.js)
-    // it *seems* that the scenario is as follows: badcert (onSecurityChange)
-    // leading to about:blank, which triggers request of
+    // Experience shows that the order is as follows: badcert
+    // (onSecurityChange) leading to about:blank, then request of
     // about:document-onload-blocker, leading to about:certerror (called at
     // least twice)
     onStateChange: function (aBrowser, aWebProgress, aRequest, aStateFlags, aStatus) {
@@ -336,9 +338,8 @@ sce.Main = {
       var safeRequestName = sce.Utils.safeGetName(aRequest);
       sce.Debug.dump("safeRequestName: " + safeRequestName);
 
-      // WE JUST CAN'T CANCEL THE REQUEST FOR
-      // about:certerr|about:document-onload-blocker
-      // ...SO WE WAIT FOR IT !
+      // WE JUST CAN'T CANCEL THE REQUEST FOR about:certerr |
+      // about:document-onload-blocker ...SO WE WAIT FOR IT !
       if (aStateFlags & (Ci.nsIWebProgressListener.STATE_STOP
                           |Ci.nsIWebProgressListener.STATE_IS_REQUEST)) {
 
@@ -377,8 +378,7 @@ sce.Main = {
 
     }, // END onStateChange
 
-    onLocationChange: function(aBrowser, aWebProgress, aRequest, aLocation) { },
-
+    onLocationChange: function() { },
     onProgressChange: function() { },
     onStatusChange: function() { },
 

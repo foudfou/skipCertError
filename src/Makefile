@@ -1,18 +1,21 @@
 .PHONY: help
 help:
-	@echo to build SkipCertError, just:
+	@echo "BUILD/INSTALL INSTRUCTIONS"
+	@echo
+	@echo "to build SkipCertError, just:"
 	@echo "  make all"
 	@echo
-	@echo to strip debug calls from js files and turn DEBUG_MODE off:
+	@echo "to strip debug calls from js files and turn DEBUG_MODE off (performance):"
 	@echo "  DEBUG=off make"
 	@echo
-	@echo to create the dev profile:
+	@echo "to create the dev profile:"
 	@echo " firefox -no-remote -P	# create '$(profile_dir)'"
 	@echo
-	@echo to deploy to dev profile:
-	@echo "  make install"
+	@echo "to deploy to dev profile:"
+	@echo "  make clean"
+	@echo "  DEBUG=on make install"
 	@echo
-	@echo to test with dev profile:
+	@echo "to test with dev profile:"
 	@echo "  firefox -no-remote -P skipcerterror-dev"
 	@echo
 
@@ -131,6 +134,7 @@ $(build_dir)/%: %
 	@cp -f $< $@
 
 # Debug calls are removed for performance.
+# TODO: we could also use m4 for filtering source files...
 $(build_dir)/$(chrome_source_root)/%.js: $(chrome_source_root)/%.js
 	@mkdir -p $(dir $@)
 	@if [[ "$(DEBUG)" =~ $(NO_RE) ]]; \

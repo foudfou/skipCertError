@@ -11,11 +11,13 @@ Nightingale, then maintained by Andras Tim.
 Notes
 -----
 
+* build instructions: *cd src; make*
+
 * SkipCertError turns on the *expert\_bad\_cert* built-in preference, which
-  enables adding a cert exception in 2 clicks (in FF4+). So caution
+  enables adding a cert exception in 2 clicks (in FF4+).
 
 Acknowledgment
 --------------
 
-Some code parts were inspired by the [Perspectives
+Some code pieces were inspired by the [Perspectives
 extension](http://www.networknotary.org/ "Thanks guys").
