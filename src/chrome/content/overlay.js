@@ -180,16 +180,18 @@ sce.Main = {
     }
 
     // build notification
-    var priority = 'PRIORITY_INFO_LOW'; // notificationBox.PRIORITY_INFO_LOW not working ??
     var temporaryException = sce.Utils.prefService.getBoolPref('add_temporary_exceptions') ?
       sce.Main.strings.getString('temporaryException') : sce.Main.strings.getString('permanentException');
     var msgArgs = [];
+    var priority = null;  // notificationBox.PRIORITY_INFO_LOW not working ??
     switch (sce.Main.notification.type) {
     case 'exceptionAdded':
       msgArgs = [temporaryException, sce.Main.notification.host];
+      priority = 'PRIORITY_INFO_LOW';
       break;
     case 'exceptionNotAdded':
       msgArgs = [sce.Main.notification.dontBypassFlags];
+      priority = 'PRIORITY_WARNING_LOW';
       break;
     default:
       break;
@@ -284,6 +286,7 @@ sce.Main = {
         sce.Debug.dump("issuer not trusted");
       case Ci.nsIX509Cert.ISSUER_UNKNOWN:
         sce.Debug.dump("issuer unknown");
+        sce.Debug.dump("bypass_issuer_unknown: " + sce.Utils.prefService.getBoolPref("bypass_issuer_unknown"));
         if (!sce.Utils.prefService.getBoolPref("bypass_issuer_unknown"))
           dontBypassFlags |= Ci.nsIX509Cert.ISSUER_UNKNOWN;
       default:

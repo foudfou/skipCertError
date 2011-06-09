@@ -9,6 +9,8 @@ sce.UIOptions = {
 
   onLoad: function() {
     this.toggleDisable_All(sce.Utils.prefService.getBoolPref('enabled'));
+    this.toggleCheck_BypassIssuerUnknown(
+      document.getElementById('ui_bypass_self_signed').checked);
   },
 
   toggleDisable_All: function(enabledChecked) {
@@ -17,15 +19,15 @@ sce.UIOptions = {
     this.toggleDisable_BypassErrors(enabledChecked);
    },
 
-  toggleDisable_BypassErrors: function(silentChecked) {
+  toggleDisable_BypassErrors: function(checked) {
     var certErrorCondChildren = document.getElementById('ui_bypass_errors')
       .childNodes;
     for (var i = 0; i < certErrorCondChildren.length; i++) {
       var node = certErrorCondChildren[i];
-      node.disabled = !silentChecked;
+      node.disabled = !checked;
      }
 
-    if (silentChecked)
+    if (checked)
       this.toggleCheck_BypassIssuerUnknown(
         document.getElementById('ui_bypass_self_signed').checked);
   },
