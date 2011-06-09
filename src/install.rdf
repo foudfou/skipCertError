@@ -10,7 +10,7 @@
     <em:contributor>Andras TIM (MITMME maintainer)</em:contributor>
     <em:contributor>Johnathan Nightingale (MITMME original author)</em:contributor>
     <em:homepageURL>https://github.com/foudfou/skipCertError</em:homepageURL>
-    <em:description>This Firefox extension enables skipping the SSL/TLS certificate error page, for specific configurable conditions, like self-signed cert or unknown issuer, by adding a temporary exception to FF's cert DB.</em:description>
+    <em:description>This Firefox extension enables skipping the SSL/TLS certificate error page, for specific configurable conditions, like self-signed cert or unknown issuer, by adding a temporary exception.</em:description>
     <em:optionsURL>chrome://sce/content/options.xul</em:optionsURL>
     <em:iconURL>chrome://sce/skin/icon48.png</em:iconURL>
     <em:icon64URL>chrome://sce/skin/icon64.png</em:icon64URL>
