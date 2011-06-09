@@ -42,6 +42,10 @@ sce.Debug = {
 
   /* Console logging functions */
   /* NOTE: Web Console inappropriates: doesn't catch all messages */
+  /*
+   * CAUTION: dump() dumpObj() may be stripped from .js files during xpi build.
+   * IT'S IMPORTANT THAT DEBUG CALLS ARE WRITTEN ON A SINGLE LINE !
+   */
   dump: function(message) { // Debuging function -- prints to javascript console
     if(!sce.DEBUG_MODE) return;
     this._consoleService.logStringMessage(message);

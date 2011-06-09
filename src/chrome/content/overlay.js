@@ -287,8 +287,7 @@ sce.Main = {
         break;
       }
       var dontBypassTag = sce.Main._parseBadCertFlags(dontBypassFlags);
-      sce.Debug.dump("dontBypassFlags=" + dontBypassFlags
-                     + ", " + dontBypassTag);
+      sce.Debug.dump("dontBypassFlags=" + dontBypassFlags + ", " + dontBypassTag);
 
       // trigger notification
       if (sce.Utils.prefService.getBoolPref('notify')) {
