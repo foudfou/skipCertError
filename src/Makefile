@@ -1,7 +1,7 @@
 .PHONY: help
 help:
 	@echo to build SkipCertError, just:
-	@echo "  make"
+	@echo "  make all"
 	@echo
 	@echo to strip debug calls from js files and turn DEBUG_MODE off:
 	@echo "  DEBUG=off make"
@@ -126,17 +126,24 @@ install: $(xpi_file) $(profile_location)
 NO_RE := no|false|n|f|off
 
 # called via $(build_includes)
-# Debug calls are removed for performance.
 $(build_dir)/%: %
 	@mkdir -p $(dir $@)
-	@if [[ "$(DEBUG)" =~ $(NO_RE) && "$(chrome_sources_js)" =~ "$<" ]]; \
+	@cp -f $< $@
+
+# Debug calls are removed for performance.
+$(build_dir)/$(chrome_source_root)/%.js: $(chrome_source_root)/%.js
+	@mkdir -p $(dir $@)
+	@if [[ "$(DEBUG)" =~ $(NO_RE) ]]; \
   then \
     echo "Stripping comments from JS file $<..."; \
     sed '/sce\.Debug\.dump/d' $< > $@; \
   else \
     cp -f $< $@; \
   fi
-	@if [[ "$(DEBUG)" =~ $(NO_RE) && "$(modules_dir)/commons.js" == "$<" ]]; \
+
+$(build_dir)/$(modules_dir)/commons.js: $(modules_dir)/commons.js
+	@mkdir -p $(dir $@)
+	@if [[ "$(DEBUG)" =~ $(NO_RE) ]]; \
   then \
     echo "Turning DEBUG_MODE off."; \
     sed 's/DEBUG_MODE: true/DEBUG_MODE: false/' $< > $@; \
