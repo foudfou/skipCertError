@@ -139,7 +139,7 @@ $(build_dir)/$(chrome_source_root)/%.js: $(chrome_source_root)/%.js
 	@mkdir -p $(dir $@)
 	@if [[ "$(DEBUG)" =~ $(NO_RE) ]]; \
   then \
-    echo "Stripping comments from JS file $<..."; \
+    echo "Stripping comments from JS file $<"; \
     sed '/sce\.Debug\.dump/d' $< > $@; \
   else \
     cp -f $< $@; \

@@ -34,10 +34,10 @@ sce.Debug = {
    * Object constructor.
    */
   init: function() {
-    if (this._initialized) return;
-    this._consoleService = Cc['@mozilla.org/consoleservice;1'].getService(Ci.nsIConsoleService);
+    if (this.initialized) return;
+    this.consoleService = Cc['@mozilla.org/consoleservice;1'].getService(Ci.nsIConsoleService);
     this.dump("SkipCertError Debug initialized");
-    this._initialized = true;
+    this.initialized = true;
   },
 
   /* Console logging functions */
@@ -48,7 +48,7 @@ sce.Debug = {
    */
   dump: function(message) { // Debuging function -- prints to javascript console
     if(!sce.DEBUG_MODE) return;
-    this._consoleService.logStringMessage(message);
+    this.consoleService.logStringMessage(message);
   },
 
   dumpObj: function(obj) {
