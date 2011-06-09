@@ -29,6 +29,8 @@ sce.Main = {
     // initialization code
     this.initialized = null;
     this.strings = document.getElementById("sce-strings");
+    this.overrideService = null;
+    this.recentCertsService = null;
     this.notification = {};
     this.stash = {};
 
@@ -39,10 +41,10 @@ sce.Main = {
       sce.Utils.prefService.addObserver("", this, false);
 
       // Get cert services
-      this._overrideService =
+      this.overrideService =
         Cc["@mozilla.org/security/certoverride;1"]
         .getService(Components.interfaces.nsICertOverrideService);
-      this._recentCertsSvc = Cc["@mozilla.org/security/recentbadcerts;1"]
+      this.recentCertsService = Cc["@mozilla.org/security/recentbadcerts;1"]
         .getService(Ci.nsIRecentBadCertsService);
     }
     catch (ex) {
@@ -103,7 +105,7 @@ sce.Main = {
   _getCertException: function(uri, cert) {
     var outFlags = {};
     var outTempException = {};
-    var knownCert = sce.Main._overrideService.hasMatchingOverride(
+    var knownCert = sce.Main.overrideService.hasMatchingOverride(
       uri.asciiHost,
       uri.port,
       cert,
@@ -116,12 +118,12 @@ sce.Main = {
   _addCertException: function(SSLStatus, uri, cert) {
     var flags = 0;
     if(SSLStatus.isUntrusted)
-      flags |= sce.Main._overrideService.ERROR_UNTRUSTED;
+      flags |= sce.Main.overrideService.ERROR_UNTRUSTED;
     if(SSLStatus.isDomainMismatch)
-      flags |= sce.Main._overrideService.ERROR_MISMATCH;
+      flags |= sce.Main.overrideService.ERROR_MISMATCH;
     if(SSLStatus.isNotValidAtThisTime)
-      flags |= sce.Main._overrideService.ERROR_TIME;
-    sce.Main._overrideService.rememberValidityOverride(
+      flags |= sce.Main.overrideService.ERROR_TIME;
+    sce.Main.overrideService.rememberValidityOverride(
       uri.asciiHost, uri.port,
       cert,
       flags,
@@ -247,7 +249,7 @@ sce.Main = {
       if (port == -1) port = 443; // thx http://gitorious.org/perspectives-notary-server/
       var hostWithPort = uri.host + ":" + port;
       sce.Main.notification.host = uri.host;
-      var SSLStatus = sce.Main._recentCertsSvc.getRecentBadCert(hostWithPort);
+      var SSLStatus = sce.Main.recentCertsService.getRecentBadCert(hostWithPort);
       if (!SSLStatus) {
         Components.utils.reportError("SkipCertError: couldn't get SSLStatus for: " + hostWithPort);
         return;
