@@ -1,8 +1,1 @@
-<!ENTITY sce.label "Your localized menuitem">
-<!ENTITY sceContext.label "Your Menuitem">
-<!ENTITY sceContext.accesskey "Y">
-<!ENTITY sceToolbarButton.label "Your Toolbar Button">
-<!ENTITY sceToolbarButton.tooltip "This is your toolbar button!">
-<!ENTITY sceSidebar.label "Your Sidebar">
-<!ENTITY sceToolbar.name  "example">
-<!ENTITY sceToolbar.label "This is an example toolbar. You can hide it under View &gt; toolbars &gt; &sceToolbar.name;">
+<!ENTITY sce.label "My localized menuitem">
