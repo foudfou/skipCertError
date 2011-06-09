@@ -1,3 +1,21 @@
+.PHONY: help
+help:
+	@echo to build SkipCertError, just:
+	@echo "  make"
+	@echo
+	@echo to strip debug calls from js files and turn DEBUG_MODE off:
+	@echo "  DEBUG=off make"
+	@echo
+	@echo to create the dev profile:
+	@echo " firefox -no-remote -P	# create '$(profile_dir)'"
+	@echo
+	@echo to deploy to dev profile:
+	@echo "  make install"
+	@echo
+	@echo to test with dev profile:
+	@echo "  firefox -no-remote -P skipcerterror-dev"
+	@echo
+
 # The UUID of the extension.
 extension_uuid := skipcerterror@foudil.fr
 
@@ -45,11 +63,12 @@ chrome_manifest := chrome.manifest
 # The preferences dir.
 preferences_dir := defaults/preferences
 
-# The root of the JAR sources.
+# The root of the chrome sources.
 chrome_source_root := chrome
 
-# The sources for the JAR file.
-chrome_sources := $(wildcard $(chrome_source_root)/content/*.js) \
+# The chrome sources.
+chrome_sources_js := $(wildcard $(chrome_source_root)/content/*.js)
+chrome_sources := $(chrome_sources_js) \
                $(wildcard $(chrome_source_root)/content/*.xul) \
                $(wildcard $(chrome_source_root)/content/*.xml) \
                $(wildcard $(chrome_source_root)/content/*.css) \
@@ -73,9 +92,13 @@ xpi_includes := $(license) \
              $(chrome_sources) \
              $(modules_sources)
 
-$(xpi_file): $(build_dir) $(xpi_includes)
+# Destination files
+build_includes := $(foreach f,$(xpi_includes),$(build_dir)/$(f))
+
+
+$(xpi_file): $(build_dir) $(build_includes)
 	@echo "Creating XPI file."
-	@$(ZIP) $(xpi_file) $(xpi_includes)
+	@cd $(build_dir); $(ZIP) $(xpi_name) $(xpi_includes)
 	@echo "Creating XPI file. Done!"
 
 # This builds the extension XPI file.
@@ -98,6 +121,28 @@ install: $(xpi_file) $(profile_location)
 	@cp -f $(xpi_file) $(profile_location)
 	@echo "Installing in profile folder. Done!"
 	@echo
+
+# Regex for 'no'
+NO_RE := no|false|n|f|off
+
+# called via $(build_includes)
+# Debug calls are removed for performance.
+$(build_dir)/%: %
+	@mkdir -p $(dir $@)
+	@if [[ "$(DEBUG)" =~ $(NO_RE) && "$(chrome_sources_js)" =~ "$<" ]]; \
+  then \
+    echo "Stripping comments from JS file $<..."; \
+    sed '/sce\.Debug\.dump/d' $< > $@; \
+  else \
+    cp -f $< $@; \
+  fi
+	@if [[ "$(DEBUG)" =~ $(NO_RE) && "$(modules_dir)/commons.js" == "$<" ]]; \
+  then \
+    echo "Turning DEBUG_MODE off."; \
+    sed 's/DEBUG_MODE: true/DEBUG_MODE: false/' $< > $@; \
+  else \
+    cp -f $< $@; \
+  fi
 
 $(build_dir):
 	@if [ ! -x $(build_dir) ]; \
