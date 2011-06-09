@@ -31,10 +31,6 @@ ZIP := zip
 # The target location of the build and build files.
 build_dir := ../build
 
-# The target XPI file.
-xpi_name := $(extension_uuid).xpi
-xpi_file := $(build_dir)/$(xpi_name)
-
 # The type of operating system this make command is running on.
 # os_type := $(patsubst darwin%,darwin,$(shell echo $(OSTYPE)))
 # we don't want to: export OSTYPE; make install
@@ -59,6 +55,17 @@ license := LICENSE
 
 # The install.rdf file.
 install_rdf := install.rdf
+
+# Version fetched from install.rdf
+VERSION := $(shell awk '/<em:version>/ {  version=$$1; \
+  version=gensub(/<em:version>(.+)<\/em:version>/, "\\1", "g", version); \
+  print version }' $(install_rdf))
+
+# The target XPI files.
+xpi_file := $(extension_uuid)-$(VERSION).xpi
+xpi_built := $(build_dir)/$(xpi_file)
+# Since we use <em:unpack>false, we need the same name across versions
+xpi_deployed := $(extension_uuid).xpi
 
 # The chrome.manifest file.
 chrome_manifest := chrome.manifest
@@ -99,14 +106,14 @@ xpi_includes := $(license) \
 build_includes := $(foreach f,$(xpi_includes),$(build_dir)/$(f))
 
 
-$(xpi_file): $(build_dir) $(build_includes)
+$(xpi_built): $(build_dir) $(build_includes)
 	@echo "Creating XPI file."
-	@cd $(build_dir); $(ZIP) $(xpi_name) $(xpi_includes)
+	@cd $(build_dir); $(ZIP) $(xpi_file) $(xpi_includes)
 	@echo "Creating XPI file. Done!"
 
 # This builds the extension XPI file.
 .PHONY: all
-all: $(xpi_file)
+all: $(xpi_built)
 	@echo
 	@echo "Build finished successfully."
 	@echo
@@ -119,9 +126,9 @@ clean: clean_build clean_profile
 # This builds everything except for the actual XPI, and then it copies it to the
 # specified profile directory, allowing a quick update that requires no install.
 .PHONY: install
-install: $(xpi_file) $(profile_location)
+install: $(xpi_built) $(profile_location)
 	@echo "Installing in profile folder: $(profile_location)"
-	@cp -f $(xpi_file) $(profile_location)
+	@cp -f $(xpi_built) $(profile_location)/$(xpi_deployed)
 	@echo "Installing in profile folder. Done!"
 	@echo
 
@@ -174,4 +181,4 @@ clean_build:
 
 clean_profile:
 	@echo "Removing extension from extension folder: $(profile_location)"
-	@rm -f $(profile_location)/$(xpi_name)
+	@rm -f $(profile_location)/$(xpi_deployed)
