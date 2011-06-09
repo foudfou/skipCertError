@@ -16,6 +16,7 @@ Notes
 * SkipCertError turns on the *expert\_bad\_cert* built-in preference, which
   enables adding a cert exception in 2 clicks (in FF4+).
 
+
 Acknowledgment
 --------------
 

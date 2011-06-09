@@ -174,7 +174,8 @@ sce.Main = {
     sce.Main.stash.notificationBox = notificationBox; // stash for later use
 
     // check notification not already here
-    if (notificationBox.getNotificationWithValue('SkipCertError')) {
+    var notificationValue = sce.Main.notification.type + '_' + sce.Main.notification.host;
+    if (notificationBox.getNotificationWithValue(notificationValue)) {
       sce.Debug.dump("notificationBox already here");
       return;
     }
@@ -201,7 +202,7 @@ sce.Main = {
 
     // appendNotification( label , value , image , priority , buttons )
     var notification = notificationBox.appendNotification(
-      message, 'SkipCertError', null, notificationBox[priority], null);
+      message, notificationValue, null, notificationBox[priority], null);
 
     // close notificatioBox if needed (will close automatically if reload)
     var exceptionDialogButton = abrowser.webProgress.DOMWindow
