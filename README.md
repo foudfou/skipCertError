@@ -29,6 +29,10 @@ Notes
 * SkipCertError turns on the `expert_bad_cert` built-in preference, which
   enables adding a cert exception in 2 clicks (in FF4+).
 
+* There are interesting arguments about FF's policy towards self-signed certs
+  on [Johnathan's blog](http://blog.johnath.com/2008/08/05/ssl-question-corner/
+  "SSL Question Corner")
+
 Acknowledgment
 --------------
 

@@ -5,19 +5,21 @@ help:
 	@echo "to build SkipCertError, just:"
 	@echo "  make all"
 	@echo
-	@echo "to strip debug calls from js files and turn DEBUG_MODE off (performance):"
-	@echo "  DEBUG=off make"
+	@echo "by default, debug calls are stripped from js files and DEBUG_MODE"
+	@echo "is off (performance). If you want to keep debug calls:"
+	@echo "  DEBUG=on make all"
 	@echo
 	@echo "to create the dev profile:"
-	@echo " firefox -no-remote -P	# create '$(profile_dir)'"
+	@echo "  firefox -no-remote -P	# then create '$(profile_dir)'"
 	@echo
 	@echo "to deploy to dev profile:"
 	@echo "  make clean"
-	@echo "  DEBUG=on make install"
+	@echo "  make install"
 	@echo
 	@echo "to test with dev profile:"
 	@echo "  firefox -no-remote -P skipcerterror-dev"
 	@echo
+	@echo "Have fun !"
 
 # The UUID of the extension.
 extension_uuid := skipcerterror@foudil.fr
@@ -133,7 +135,7 @@ install: $(xpi_built) $(profile_location)
 	@echo
 
 # Regex for 'no'
-NO_RE := no|false|n|f|off
+YES_RE := yes|y|Y|true|on
 
 # called via $(build_includes)
 $(build_dir)/%: %
@@ -141,25 +143,25 @@ $(build_dir)/%: %
 	@cp -f $< $@
 
 # Debug calls are removed for performance.
-# TODO: we could also use m4 for filtering source files...
+# NOTE: we could also use m4 for filtering source files...
 $(build_dir)/$(chrome_source_root)/%.js: $(chrome_source_root)/%.js
 	@mkdir -p $(dir $@)
-	@if [[ "$(DEBUG)" =~ $(NO_RE) ]]; \
+	@if [[ "$(DEBUG)" =~ $(YES_RE) ]]; \
   then \
+    cp -f $< $@; \
+  else \
     echo "Stripping comments from JS file $<"; \
     sed '/sce\.Debug\.dump/d' $< > $@; \
-  else \
-    cp -f $< $@; \
   fi
 
 $(build_dir)/$(modules_dir)/commons.js: $(modules_dir)/commons.js
 	@mkdir -p $(dir $@)
-	@if [[ "$(DEBUG)" =~ $(NO_RE) ]]; \
+	@if [[ "$(DEBUG)" =~ $(YES_RE) ]]; \
   then \
+    cp -f $< $@; \
+  else \
     echo "Turning DEBUG_MODE off."; \
     sed 's/DEBUG_MODE: true/DEBUG_MODE: false/' $< > $@; \
-  else \
-    cp -f $< $@; \
   fi
 
 $(build_dir):
