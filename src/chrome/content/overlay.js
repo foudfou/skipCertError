@@ -111,7 +111,6 @@ sce.Main = {
       cert,
       outFlags,
       outTempException);
-    sce.Debug.dump("known cert: " + knownCert);
     return knownCert;
   },
 
@@ -248,24 +247,32 @@ sce.Main = {
       this._certerrorCount = 0; // reset
 
       // retrieve bad cert from nsIRecentBadCertsService
+      // NOTE: experience shows that nsIRecentBadCertsService will not provide
+      // SSLStatus when cert is known or trusted. That's why we don't try to
+      // get it from aRequest
       var port = uri.port;
       if (port == -1) port = 443; // thx http://gitorious.org/perspectives-notary-server/
       var hostWithPort = uri.host + ":" + port;
       sce.Main.notification.host = uri.host;
       var SSLStatus = sce.Main.recentCertsService.getRecentBadCert(hostWithPort);
+
       if (!SSLStatus) {
-        Components.utils.reportError("SkipCertError: couldn't get SSLStatus for: " + hostWithPort);
+        sce.Debug.dump("no SSLStatus for: " + hostWithPort);
         return;
       }
-      var cert = SSLStatus.serverCert;
+
       sce.Debug.dump("SSLStatus");
       sce.Debug.dumpObj(SSLStatus);
+      var cert = SSLStatus.serverCert;
       sce.Debug.dump("cert");
       sce.Debug.dumpObj(cert);
 
       // check if cert already known/added
       var knownCert = sce.Main._getCertException(uri, cert);
-      if (knownCert) return;
+      if (knownCert) {
+        sce.Debug.dump("known cert: " + knownCert);
+        return;
+      }
 
       // Determine cert problems
       var dontBypassFlags = 0;
