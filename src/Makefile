@@ -17,7 +17,7 @@ help:
 	@echo "  make install"
 	@echo
 	@echo "to test with dev profile:"
-	@echo "  firefox -no-remote -P skipcerterror-dev"
+	@echo "  firefox -no-remote -P mozilla-dev"
 	@echo
 	@echo "Have fun !"
 
@@ -25,7 +25,7 @@ help:
 extension_uuid := skipcerterror@foudil.fr
 
 # The name of the profile dir where the extension can be installed.
-profile_dir := skipcerterror-dev
+profile_dir := mozilla-dev
 
 # The zip application to be used.
 ZIP := zip
