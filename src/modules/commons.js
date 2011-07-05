@@ -25,10 +25,7 @@ if ("undefined" == typeof(sce)) {
 };
 
 sce.Debug = {
-
-  _initialized: false,
-
-  _consoleService: null,
+  initialized: false,
 
   /**
    * Object constructor.
