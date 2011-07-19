@@ -6,7 +6,7 @@
  * http://developer.mozilla.org/en/XUL_School/JavaScript_Object_Management.html
  */
 
-var EXPORTED_SYMBOLS = [ "sce", "SCE_CERT_SELF_SIGNED" ];
+var EXPORTED_SYMBOLS = [ "Cc", "Ci", "SCE_CERT_SELF_SIGNED", "sce" ];
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -14,17 +14,16 @@ const Ci = Components.interfaces;
 /* SCE Constants */
 const SCE_CERT_SELF_SIGNED = 1 << 8; // completes nsIX509Cert's constants for
                                      // certificate verification results
-
 /**
  * sce namespace.
  */
 if ("undefined" == typeof(sce)) {
-  var sce = {
-    DEBUG_MODE: true,
-  };
+  var sce = {};
 };
 
 sce.Debug = {
+  DEBUG_MODE: true,
+
   initialized: false,
 
   /**
@@ -44,12 +43,12 @@ sce.Debug = {
    * IT'S IMPORTANT THAT DEBUG CALLS ARE WRITTEN ON A SINGLE LINE !
    */
   dump: function(message) { // Debuging function -- prints to javascript console
-    if(!sce.DEBUG_MODE) return;
+    if(!this.DEBUG_MODE) return;
     this.consoleService.logStringMessage(message);
   },
 
   dumpObj: function(obj) {
-    if(!sce.DEBUG_MODE) return;
+    if(!this.DEBUG_MODE) return;
     var str = "";
     for(i in obj) {
       try {
@@ -62,8 +61,10 @@ sce.Debug = {
   },
 
 };
+
 // build it !
-sce.Debug.init();
+(function() { this.init(); }).
+  apply(sce.Debug);
 
 
 sce.Utils = {

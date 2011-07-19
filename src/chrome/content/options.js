@@ -2,8 +2,12 @@
 
 Components.utils.import("resource://sce/commons.js");
 
-const Cc = Components.classes;
-const Ci = Components.interfaces;
+/**
+ * sce namespace.
+ */
+if ("undefined" == typeof(sce)) {
+  var sce = {};
+};
 
 sce.UIOptions = {
 
