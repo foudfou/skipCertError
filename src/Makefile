@@ -150,7 +150,7 @@ $(build_dir)/$(chrome_source_root)/%.js: $(chrome_source_root)/%.js
   then \
     cp -f $< $@; \
   else \
-    echo "Stripping comments from JS file $<"; \
+    echo "Stripping debug calls from JS file $<"; \
     sed '/sce\.Debug\.dump/d' $< > $@; \
   fi
 

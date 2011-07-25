@@ -2,7 +2,7 @@
 <?xml-stylesheet href="chrome://sce/skin/overlay.css" type="text/css"?>
 <!DOCTYPE overlay SYSTEM "chrome://sce/locale/overlay.dtd">
 <overlay id="sce-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-  <script src="overlay.js"/>
+  <script type="application/javascript;version=1.7" src="overlay.js"/>
 
   <stringbundleset id="stringbundleset">
     <stringbundle id="sce-strings" src="chrome://sce/locale/overlay.properties"/>
