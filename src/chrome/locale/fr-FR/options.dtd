@@ -7,6 +7,8 @@
 <!ENTITY bool_notify.label "Notifications">
 <!ENTITY bool_notify.accesskey "N">
 <!ENTITY bypass_errors "Outrepasser si le certificat est:">
+<!ENTITY bool_bypass_issuer_not_trusted.label "d'émetteur non-fiable">
+<!ENTITY bool_bypass_issuer_not_trusted.accesskey "U">
 <!ENTITY bool_bypass_issuer_unknown.label "d'émetteur inconnu">
 <!ENTITY bool_bypass_issuer_unknown.accesskey "I">
 <!ENTITY bool_bypass_self_signed.label "auto-signé">
