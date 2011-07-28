@@ -258,6 +258,10 @@ sce.Main = {
         tag += ', ' + sceMain().strings.getString('USAGE_NOT_ALLOWED');
       if (flags & SCE_CERT_SELF_SIGNED)
         tag += ', ' + sceMain().strings.getString('CERT_SELF_SIGNED');
+      if (flags & SCE_SSL_DOMAIN_MISMATCH)
+        tag += ', ' + sceMain().strings.getString('SSL_DOMAIN_MISMATCH');
+      if (flags & SCE_SSL_NOT_VALID)
+        tag += ', ' + sceMain().strings.getString('SSL_NOT_VALID');
 
       if (tag != "") tag = tag.substr(2); // remove leading ', '
 
@@ -313,10 +317,6 @@ sce.Main = {
        * SSLStatus.is* are set (bitarray) OR verificationResult != 0 (exclusive
        * conditions)
        *
-       * NOTE: any of UNKNOWN_ISSUER, CA_CERT_INVALID, UNTRUSTED_ISSUER,
-       * EXPIRED_ISSUER_CERTIFICATE, UNTRUSTED_CERT, INADEQUATE_KEY_USAGE
-       * triggers nsICertOverrideService::ERROR_UNTRUSTED (nsNSSIOLayer.cpp)
-       *
        * For now, we'll make it simple: if *all* encountered conditions are set
        * to bypass (see options), then we bypass. If some aren't set, we don't
        * bypass and notify. For all other errors, we don't bypass, and notify
@@ -332,7 +332,7 @@ sce.Main = {
       cert.QueryInterface(Ci.nsIX509Cert3);
       var isSelfSigned = cert.isSelfSigned;
       sce.Debug.dump("isSelfSigned:" + isSelfSigned + ", bypass=" + sce.Utils.prefService.getBoolPref("bypass_self_signed"));
-      if (isSelfSigned) {
+      if (isSelfSigned) {       // ex: https://www.pcwebshop.co.uk/
         if (sce.Utils.prefService.getBoolPref("bypass_self_signed"))
           bypassFlags |= SCE_CERT_SELF_SIGNED;
         else
@@ -341,7 +341,8 @@ sce.Main = {
 
       var verificationResult = cert.verifyForUsage(Ci.nsIX509Cert.CERT_USAGE_SSLServer);
       sce.Debug.dump("verificationResult: " + verificationResult);
-      // all conditions are exclusive !!
+      // all conditions are exclusive - which is odd because a cert could be
+      // revoked and expired (?)
       switch (verificationResult) {
 
       case Ci.nsIX509Cert.ISSUER_NOT_TRUSTED: // implied by self-signed, ex: https://linux.fr
@@ -377,11 +378,27 @@ sce.Main = {
         break;
       }
 
-      // CAUTION: verificationResult (see later) can be 0, but cert still bad !
-      // TODO: we might want to hanlde exception for SSLStatus.is* in the future...
-      if(SSLStatus.isUntrusted) sce.Debug.dump("SSLStatus.isUntrusted");
-      if(SSLStatus.isDomainMismatch) sce.Debug.dump("SSLStatus.isDomainMismatch"); // ex: https://amazon.com/
-      if(SSLStatus.isNotValidAtThisTime) sce.Debug.dump("SSLStatus.isNotValidAtThisTime");
+      /*
+       * CAUTION: verificationResult (see later) can be 0, but cert still bad:
+       * either because of SSLStatus.is*, or because OCSP query not issued yet
+       */
+      /*
+       * NOTE: any of UNKNOWN_ISSUER, CA_CERT_INVALID, UNTRUSTED_ISSUER,
+       * EXPIRED_ISSUER_CERTIFICATE, UNTRUSTED_CERT, INADEQUATE_KEY_USAGE
+       * triggers nsICertOverrideService::ERROR_UNTRUSTED (nsNSSIOLayer.cpp)
+       */
+      if(SSLStatus.isUntrusted) {
+        sce.Debug.dump("SSLStatus.isUntrusted");
+        // ignoreFlags will be null => 'unknown'
+      }
+      if(SSLStatus.isDomainMismatch) {
+        sce.Debug.dump("SSLStatus.isDomainMismatch"); // ex: https://amazon.com/
+        ignoreFlags |= SCE_SSL_DOMAIN_MISMATCH;
+      }
+      if(SSLStatus.isNotValidAtThisTime) {
+        sce.Debug.dump("SSLStatus.isNotValidAtThisTime");
+        ignoreFlags |= SCE_SSL_NOT_VALID;
+      }
 
       var bypassTags = this._parseBadCertFlags(bypassFlags);
       sce.Debug.dump("bypassFlags=" + bypassFlags + ", " + bypassTags);

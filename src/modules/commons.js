@@ -6,14 +6,18 @@
  * http://developer.mozilla.org/en/XUL_School/JavaScript_Object_Management.html
  */
 
-var EXPORTED_SYMBOLS = [ "SCE_CERT_SELF_SIGNED", "sce" ];
+var EXPORTED_SYMBOLS = [ "sce", "SCE_CERT_SELF_SIGNED",
+  "SCE_SSL_DOMAIN_MISMATCH", "SCE_SSL_NOT_VALID" ];
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 /* SCE Constants */
-const SCE_CERT_SELF_SIGNED = 1 << 8; // completes nsIX509Cert's constants for
-                                     // certificate verification results
+// custom const to keep track of cert errors
+const SCE_CERT_SELF_SIGNED     = 1 << 8;
+const SCE_SSL_DOMAIN_MISMATCH  = 1 << 9;
+const SCE_SSL_NOT_VALID        = 1 << 10;
+
 /**
  * sce namespace.
  */
