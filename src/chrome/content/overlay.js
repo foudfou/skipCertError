@@ -182,7 +182,7 @@ sce.Main = {
       priority = 'PRIORITY_INFO_LOW';
       break;
     case 'exceptionNotAdded':
-      msgArgs = [this.notification.bypassTag];
+      msgArgs = [this.notification.host, this.notification.bypassTag];
       priority = 'PRIORITY_WARNING_LOW';
       break;
     case 'exceptionIgnored':
