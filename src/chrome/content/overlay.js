@@ -391,9 +391,11 @@ sce.Main = {
         sce.Debug.dump("SSLStatus.isUntrusted");
         // ignoreFlags will be null => 'unknown'
       }
-      if(SSLStatus.isDomainMismatch) {
-        sce.Debug.dump("SSLStatus.isDomainMismatch"); // ex: https://amazon.com/
-        ignoreFlags |= SCE_SSL_DOMAIN_MISMATCH;
+      if(SSLStatus.isDomainMismatch) { // ex: https://amazon.com/
+        if (sce.Utils.prefService.getBoolPref("bypass_domain_mismatch"))
+          bypassFlags |= SCE_SSL_DOMAIN_MISMATCH;
+        else
+          dontBypassFlags |= SCE_SSL_DOMAIN_MISMATCH;
       }
       if(SSLStatus.isNotValidAtThisTime) {
         sce.Debug.dump("SSLStatus.isNotValidAtThisTime");

@@ -6,10 +6,12 @@
 <!ENTITY bool_add_temporary_exceptions.accesskey "T">
 <!ENTITY bool_notify.label "Notifications">
 <!ENTITY bool_notify.accesskey "N">
-<!ENTITY bypass_errors "Outrepasser si le certificat est:">
-<!ENTITY bool_bypass_issuer_not_trusted.label "d'émetteur non-fiable">
+<!ENTITY bypass_errors "Outrepasser si le certificat:">
+<!ENTITY bool_bypass_issuer_not_trusted.label "est d'émetteur non-fiable">
 <!ENTITY bool_bypass_issuer_not_trusted.accesskey "U">
-<!ENTITY bool_bypass_issuer_unknown.label "d'émetteur inconnu">
+<!ENTITY bool_bypass_issuer_unknown.label "est d'émetteur inconnu">
 <!ENTITY bool_bypass_issuer_unknown.accesskey "I">
-<!ENTITY bool_bypass_self_signed.label "auto-signé">
+<!ENTITY bool_bypass_self_signed.label "est auto-signé">
 <!ENTITY bool_bypass_self_signed.accesskey "G">
+<!ENTITY bool_bypass_domain_mismatch.label "a une différence de domaine">
+<!ENTITY bool_bypass_domain_mismatch.accesskey "D">

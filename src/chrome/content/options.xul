@@ -23,6 +23,8 @@
                   name="extensions.sce.bypass_issuer_not_trusted" type="bool"/>
       <preference id="pref_bool_bypass_issuer_unknown"
                   name="extensions.sce.bypass_issuer_unknown" type="bool"/>
+      <preference id="pref_bool_bypass_domain_mismatch"
+                  name="extensions.sce.bypass_domain_mismatch" type="bool"/>
     </preferences>
 
     <groupbox>
@@ -54,6 +56,10 @@
                   preference="pref_bool_bypass_issuer_unknown"
                   label="&bool_bypass_issuer_unknown.label;"
                   accesskey="&bool_bypass_issuer_unknown.accesskey;"/>
+        <checkbox id="ui_bypass_domain_mismatch"
+                  preference="pref_bool_bypass_domain_mismatch"
+                  label="&bool_bypass_domain_mismatch.label;"
+                  accesskey="&bool_bypass_domain_mismatch.accesskey;"/>
       </groupbox>
     </groupbox>
 
