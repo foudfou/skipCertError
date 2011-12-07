@@ -1,0 +1,17 @@
+<!ENTITY prefwindow.title "Sertifika Hatalarını Atla tercihleri">
+<!ENTITY pane1.title "Sertifika Hatalarını Atla tercihleri">
+<!ENTITY bool_enabled.label "Atlamayı etkinleştir">
+<!ENTITY bool_enabled.accesskey "E">
+<!ENTITY bool_add_temporary_exceptions.label "Ayrımları geçici ekle">
+<!ENTITY bool_add_temporary_exceptions.accesskey "G">
+<!ENTITY bool_notify.label "Uyarılar">
+<!ENTITY bool_notify.accesskey "U">
+<!ENTITY bypass_errors "Sertifika şu durumdaysa hatayı atla:">
+<!ENTITY bool_bypass_issuer_not_trusted.label "yayınlayıcı güvenilmezse">
+<!ENTITY bool_bypass_issuer_not_trusted.accesskey "G">
+<!ENTITY bool_bypass_issuer_unknown.label "yayınlayıcı bilinmeyense">
+<!ENTITY bool_bypass_issuer_unknown.accesskey "b">
+<!ENTITY bool_bypass_self_signed.label "bireysel-imzalıysa">
+<!ENTITY bool_bypass_self_signed.accesskey "i">
+<!ENTITY bool_bypass_domain_mismatch.label "uyuşmayan alanadı varsa">
+<!ENTITY bool_bypass_domain_mismatch.accesskey "A">

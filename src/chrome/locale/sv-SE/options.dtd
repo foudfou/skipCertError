@@ -1,0 +1,17 @@
+<!ENTITY prefwindow.title "Inställningar för Skip Cert Error">
+<!ENTITY pane1.title "Inställningar för Skip Cert Error">
+<!ENTITY bool_enabled.label "Aktivera kringgående av fel">
+<!ENTITY bool_enabled.accesskey "A">
+<!ENTITY bool_add_temporary_exceptions.label "Lägg till undantagen som tillfälliga">
+<!ENTITY bool_add_temporary_exceptions.accesskey "t">
+<!ENTITY bool_notify.label "Meddelanden">
+<!ENTITY bool_notify.accesskey "M">
+<!ENTITY bypass_errors "Kringgå fel när certifikat:">
+<!ENTITY bool_bypass_issuer_not_trusted.label "kommer från en icke betrodd utfärdare">
+<!ENTITY bool_bypass_issuer_not_trusted.accesskey "u">
+<!ENTITY bool_bypass_issuer_unknown.label "kommer från en okänd utfärdare">
+<!ENTITY bool_bypass_issuer_unknown.accesskey "o">
+<!ENTITY bool_bypass_self_signed.label "är självsignerat">
+<!ENTITY bool_bypass_self_signed.accesskey "g">
+<!ENTITY bool_bypass_domain_mismatch.label "har icke överensstämmande domäner">
+<!ENTITY bool_bypass_domain_mismatch.accesskey "d">
