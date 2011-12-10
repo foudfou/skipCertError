@@ -2,6 +2,9 @@ content		sce			chrome/content/
 skin		sce	classic/1.0	chrome/skin/
 locale		sce	en-US		chrome/locale/en-US/
 locale		sce	fr-FR		chrome/locale/fr-FR/
+locale		sce	sv-SE		chrome/locale/sv-SE/
+locale		sce	tr		chrome/locale/tr/
+locale		sce	zh-CN		chrome/locale/zh-CN/
 resource	sce			modules/
 
 overlay		chrome://browser/content/browser.xul	chrome://sce/content/overlay.xul
