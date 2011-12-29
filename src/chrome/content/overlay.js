@@ -23,16 +23,7 @@
 
 Components.utils.import("resource://sce/commons.js");
 
-/**
- * sce namespace.
- */
-if ("undefined" == typeof(sce)) {
-  var sce = {};
-};
-
-
-sce.Main = {
-  self: function() { return this; },
+var sceChrome = {
 
   onLoad: function() {
     let that = this;
@@ -239,29 +230,29 @@ sce.Main = {
       if (flags == null) return 'unknown';
 
       if (flags == ns.VERIFIED_OK)
-        tag += ', ' + sceMain().strings.getString('VERIFIED_OK');
+        tag += ', ' + sceChrome.strings.getString('VERIFIED_OK');
       if (flags & ns.NOT_VERIFIED_UNKNOWN)
-        tag += ', ' + sceMain().strings.getString('NOT_VERIFIED_UNKNOWN');
+        tag += ', ' + sceChrome.strings.getString('NOT_VERIFIED_UNKNOWN');
       if (flags & ns.CERT_REVOKED)
-        tag += ', ' + sceMain().strings.getString('CERT_REVOKED');
+        tag += ', ' + sceChrome.strings.getString('CERT_REVOKED');
       if (flags & ns.CERT_EXPIRED)
-        tag += ', ' + sceMain().strings.getString('CERT_EXPIRED');
+        tag += ', ' + sceChrome.strings.getString('CERT_EXPIRED');
       if (flags & ns.CERT_NOT_TRUSTED)
-        tag += ', ' + sceMain().strings.getString('CERT_NOT_TRUSTED');
+        tag += ', ' + sceChrome.strings.getString('CERT_NOT_TRUSTED');
       if (flags & ns.ISSUER_NOT_TRUSTED)
-        tag += ', ' + sceMain().strings.getString('ISSUER_NOT_TRUSTED');
+        tag += ', ' + sceChrome.strings.getString('ISSUER_NOT_TRUSTED');
       if (flags & ns.ISSUER_UNKNOWN)
-        tag += ', ' + sceMain().strings.getString('ISSUER_UNKNOWN');
+        tag += ', ' + sceChrome.strings.getString('ISSUER_UNKNOWN');
       if (flags & ns.INVALID_CA)
-        tag += ', ' + sceMain().strings.getString('INVALID_CA');
+        tag += ', ' + sceChrome.strings.getString('INVALID_CA');
       if (flags & ns.USAGE_NOT_ALLOWED)
-        tag += ', ' + sceMain().strings.getString('USAGE_NOT_ALLOWED');
+        tag += ', ' + sceChrome.strings.getString('USAGE_NOT_ALLOWED');
       if (flags & SCE_CERT_SELF_SIGNED)
-        tag += ', ' + sceMain().strings.getString('CERT_SELF_SIGNED');
+        tag += ', ' + sceChrome.strings.getString('CERT_SELF_SIGNED');
       if (flags & SCE_SSL_DOMAIN_MISMATCH)
-        tag += ', ' + sceMain().strings.getString('SSL_DOMAIN_MISMATCH');
+        tag += ', ' + sceChrome.strings.getString('SSL_DOMAIN_MISMATCH');
       if (flags & SCE_SSL_NOT_VALID)
-        tag += ', ' + sceMain().strings.getString('SSL_NOT_VALID');
+        tag += ', ' + sceChrome.strings.getString('SSL_NOT_VALID');
 
       if (tag != "") tag = tag.substr(2); // remove leading ', '
 
@@ -288,8 +279,8 @@ sce.Main = {
       var port = uri.port;
       if (port == -1) port = 443; // thx http://gitorious.org/perspectives-notary-server/
       var hostWithPort = uri.host + ":" + port;
-      sceMain().notification.host = uri.host;
-      var SSLStatus = sceMain().recentCertsService.getRecentBadCert(hostWithPort);
+      sceChrome.notification.host = uri.host;
+      var SSLStatus = sceChrome.recentCertsService.getRecentBadCert(hostWithPort);
 
       if (!SSLStatus) {
         sce.Debug.dump("no SSLStatus for: " + hostWithPort);
@@ -303,7 +294,7 @@ sce.Main = {
       sce.Debug.dumpObj(cert);
 
       // check if cert already known/added
-      var knownCert = sceMain()._getCertException(uri, cert);
+      var knownCert = sceChrome._getCertException(uri, cert);
       if (knownCert) {
         sce.Debug.dump("known cert: " + knownCert);
         return;
@@ -411,21 +402,21 @@ sce.Main = {
 
       // Add cert exception (if bypass allowed by options)
       if (dontBypassFlags) {    // ALL conditions must be set
-        sceMain().notification.type = 'exceptionNotAdded';
-        sceMain().notification.bypassTag = dontBypassTags;
+        sceChrome.notification.type = 'exceptionNotAdded';
+        sceChrome.notification.bypassTag = dontBypassTags;
       } else if (bypassFlags) {
-        sceMain()._addCertException(SSLStatus, uri, cert);
-        sceMain().notification.type = 'exceptionAdded';
-        sceMain().notification.bypassTag = bypassTags;
+        sceChrome._addCertException(SSLStatus, uri, cert);
+        sceChrome.notification.type = 'exceptionAdded';
+        sceChrome.notification.bypassTag = bypassTags;
       } else {
-        sceMain().notification.type = 'exceptionIgnored';
-        sceMain().notification.bypassTag = ignoreTags;
+        sceChrome.notification.type = 'exceptionIgnored';
+        sceChrome.notification.bypassTag = ignoreTags;
       }
 
       // trigger notification
       if (sce.Utils.prefService.getBoolPref('notify')) {
-        sceMain().notification.willNotify = true;
-        sce.Debug.dump("onSecurityChange: willNotify -> " + sceMain().notification.willNotify);
+        sceChrome.notification.willNotify = true;
+        sce.Debug.dump("onSecurityChange: willNotify -> " + sceChrome.notification.willNotify);
       }
 
     }, // END onSecurityChange
@@ -487,10 +478,10 @@ sce.Main = {
             aBrowser.loadURI(this.goto_, null, null);
           }
 
-          if (sceMain().notification.willNotify) {
+          if (sceChrome.notification.willNotify) {
             sce.Debug.dump("onStateChange: willNotify");
-            sceMain().notify.willNotify = false; // reset
-            sceMain().notify(aBrowser);
+            sceChrome.notify.willNotify = false; // reset
+            sceChrome.notify(aBrowser);
           }
 
         }
@@ -506,11 +497,10 @@ sce.Main = {
   } // END TabsProgressListener
 
 }; // END Main
-var sceMain = sce.Main.self.bind(sce.Main);
 
 
 // should be sufficient for a delayed Startup (no need for window.setTimeout())
 // https://developer.mozilla.org/en/Extensions/Performance_best_practices_in_extensions
 // https://developer.mozilla.org/en/XUL_School/JavaScript_Object_Management.html
-window.addEventListener("load", function (e) { sce.Main.onLoad(); }, false);
-window.addEventListener("unload", function(e) { sce.Main.onQuit(); }, false);
+window.addEventListener("load", function (e) { sceChrome.onLoad(); }, false);
+window.addEventListener("unload", function(e) { sceChrome.onQuit(); }, false);
