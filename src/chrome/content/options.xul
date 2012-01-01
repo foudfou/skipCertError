@@ -32,7 +32,7 @@
       <checkbox id="ui_enabled" preference="pref_bool_enabled"
                 label="&bool_enabled.label;"
                 accesskey="&bool_enabled.accesskey;"
-                onclick="sceUIOptions.toggleDisable_All(!this.checked); // checked=before click"/>
+                oncommand="sceUIOptions.toggleDisable_All(this.checked);"/>
       </caption>
       <checkbox id="ui_add_temporary_exceptions"
                 preference="pref_bool_add_temporary_exceptions"
@@ -47,7 +47,7 @@
                   preference="pref_bool_bypass_self_signed"
                   label="&bool_bypass_self_signed.label;"
                   accesskey="&bool_bypass_self_signed.accesskey;"
-                  onclick="sceUIOptions.toggleCheck_BypassIssuerNotTrusted(!this.checked);"/>
+                  oncommand="sceUIOptions.toggleCheck_BypassIssuerNotTrusted(this.checked);"/>
         <checkbox id="ui_bypass_issuer_not_trusted"
                   preference="pref_bool_bypass_issuer_not_trusted"
                   label="&bool_bypass_issuer_not_trusted.label;"
