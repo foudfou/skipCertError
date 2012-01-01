@@ -74,7 +74,7 @@ var sceChrome = {
     // Remove observer
     sce.Utils.prefService.removeObserver("", that);
 
-    this._toogle(false);
+    this._toggle(false);
 
     sce.Debug.dump('SkipCertError UNLOADED !');
     this.initialized = false;
@@ -83,7 +83,7 @@ var sceChrome = {
   // since we are using a TabsProgressListener, it seems we do not need to keep
   // track of WebProgressListeners as indicated on
   // https://developer.mozilla.org/en/XUL_School/Intercepting_Page_Loads#WebProgressListeners
-  _toggle: function (enable) {
+  _toggle: function(enable) {
     let that = this;
     sce.Debug.dump('toggle: '+enable);
     try {
@@ -502,5 +502,5 @@ var sceChrome = {
 // should be sufficient for a delayed Startup (no need for window.setTimeout())
 // https://developer.mozilla.org/en/Extensions/Performance_best_practices_in_extensions
 // https://developer.mozilla.org/en/XUL_School/JavaScript_Object_Management.html
-window.addEventListener("load", function (e) { sceChrome.onLoad(); }, false);
+window.addEventListener("load", function(e) { sceChrome.onLoad(); }, false);
 window.addEventListener("unload", function(e) { sceChrome.onQuit(); }, false);

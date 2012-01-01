@@ -5,14 +5,8 @@ const Ci = Components.interfaces;
 
 Components.utils.import("resource://sce/commons.js");
 
-/**
- * sce namespace.
- */
-if ("undefined" == typeof(sce)) {
-  var sce = {};
-};
 
-sce.UIOptions = {
+var sceUIOptions = {
 
   onLoad: function() {
     this.toggleDisable_All(sce.Utils.prefService.getBoolPref('enabled'));
