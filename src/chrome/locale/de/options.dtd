@@ -1,0 +1,17 @@
+<!ENTITY prefwindow.title "Skip Cert Error - Einstellungen">
+<!ENTITY pane1.title "Skip Cert Error - Einstellungen">
+<!ENTITY bool_enabled.label "Umgehungen aktivieren">
+<!ENTITY bool_enabled.accesskey "U">
+<!ENTITY bool_add_temporary_exceptions.label "Ausnahmen nur temporär hinzufügen">
+<!ENTITY bool_add_temporary_exceptions.accesskey "t">
+<!ENTITY bool_notify.label "Benachrichtigungen">
+<!ENTITY bool_notify.accesskey "B">
+<!ENTITY bypass_errors "Zertifikats-Fehlermeldungen umgehen, wenn:">
+<!ENTITY bool_bypass_issuer_not_trusted.label "der Aussteller nicht vertrauenswürdig ist">
+<!ENTITY bool_bypass_issuer_not_trusted.accesskey "n">
+<!ENTITY bool_bypass_issuer_unknown.label "der Aussteller unbekannt ist">
+<!ENTITY bool_bypass_issuer_unknown.accesskey "u">
+<!ENTITY bool_bypass_self_signed.label "das Zertifikat selbst signiert wurde">
+<!ENTITY bool_bypass_self_signed.accesskey "s">
+<!ENTITY bool_bypass_domain_mismatch.label "Unstimmigkeiten in der Domain vorkommen">
+<!ENTITY bool_bypass_domain_mismatch.accesskey "D">
