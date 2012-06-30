@@ -78,6 +78,6 @@ sce.Utils = {
 
   safeGetName: function(request) {
     return request ? request.name : null;
-  },
+  }
 
 };

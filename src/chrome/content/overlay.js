@@ -263,6 +263,7 @@ var sceChrome = {
     // HTTPS -> HTTP, FOO -> HTTPS) and *after document load* completion. It
     // might also be called if an error occurs during network loading.
     onSecurityChange: function (aBrowser, aWebProgress, aRequest, aState) {
+
       var uri = aBrowser.currentURI;
       sce.Debug.dump("onSecurityChange: uri=" + uri.prePath);
 
@@ -444,6 +445,9 @@ var sceChrome = {
     // least twice)
     onStateChange: function (aBrowser, aWebProgress, aRequest, aStateFlags, aStatus) {
 
+      if (aRequest &&  aRequest instanceof Ci.nsIChannel)
+        aRequest.notificationCallbacks = new badCertListener();
+
       // aProgress.DOMWindow is the tab/window which triggered the change.
       var originDoc = aWebProgress.DOMWindow.document;
       var originURI = originDoc.documentURI;
@@ -497,6 +501,36 @@ var sceChrome = {
   } // END TabsProgressListener
 
 }; // END Main
+
+
+function badCertListener() {}
+badCertListener.prototype = {
+  getInterface: function (aIID) { return this.QueryInterface(aIID); },
+  QueryInterface: function(aIID) {
+    if (aIID.equals(Components.interfaces.nsIBadCertListener2)   ||
+        aIID.equals(Components.interfaces.nsIInterfaceRequestor) ||
+        aIID.equals(Components.interfaces.nsISupports)           ||
+	      false)
+      return this;
+
+    throw Components.results.NS_ERROR_NO_INTERFACE;
+  },
+
+  handle_test_result: function () {
+    alert('bad certificate, add your code here to call exceptionDialog.xul');
+    if (gSSLStatus) {
+      gCert = gSSLStatus.QueryInterface(Ci.nsISSLStatus).serverCert;
+    }
+  },
+
+  notifyCertProblem: function(socketInfo, sslStatus, targetHost) {
+    gBroken = true;
+    gSSLStatus = sslStatus;
+    gTargetHost = targetHost;
+    this.handle_test_result();
+    return true; // suppress error UI
+  }
+};
 
 
 // should be sufficient for a delayed Startup (no need for window.setTimeout())
