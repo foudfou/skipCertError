@@ -124,7 +124,7 @@ var sceChrome = {
     return knownCert;
   },
 
-  _addCertException: function(SSLStatus, uri, cert) {
+  _addCertException: function(SSLStatus, uri) {
     var flags = 0;
     if(SSLStatus.isUntrusted)
       flags |= this.overrideService.ERROR_UNTRUSTED;
@@ -134,7 +134,7 @@ var sceChrome = {
       flags |= this.overrideService.ERROR_TIME;
     this.overrideService.rememberValidityOverride(
       uri.asciiHost, uri.port,
-      cert,
+      SSLStatus.serverCert,
       flags,
       sce.Utils.prefService.getBoolPref('add_temporary_exceptions'));
     sce.Debug.dump("CertEx added");
@@ -142,6 +142,116 @@ var sceChrome = {
     sce.Debug.dump("certEx changed: " + this.TabsProgressListener.certExceptionJustAdded);
 
     this.TabsProgressListener.goto_ = uri.spec;    // never reset
+  },
+
+  certDiagnostic: function(aSSLStatus) {
+      var cert = aSSLStatus.serverCert;
+
+    // Determine cert problems.
+    /* Question is: IN WHICH CASES DO WE GET THE CERTERROR ?
+     *
+     * We know: there are 2 classes of errors: ERROR_CLASS_BAD_CERT,
+     * ERROR_CLASS_SSL_PROTOCOL. We believe certerror is triggered when some
+     * SSLStatus.is* are set (bitarray) OR verificationResult != 0 (exclusive
+     * conditions)
+     *
+     * For now, we'll make it simple: if *all* encountered conditions are set
+     * to bypass (see options), then we bypass. If some aren't set, we don't
+     * bypass and notify. For all other errors, we don't bypass, and notify
+     * "error not handled by SkipCertError"
+     */
+    var diag = {
+      bypassFlags: 0,
+      dontBypassFlags: 0, // we record when bypass conditions encountered but not set in options
+      ignoreFlags: null
+    };
+
+    // we're only interested in certs with characteristics
+    // defined in options (self-signed, issuer unknown, ...)
+    cert.QueryInterface(Ci.nsIX509Cert3);
+    var isSelfSigned = cert.isSelfSigned;
+    sce.Debug.dump("isSelfSigned:" + isSelfSigned + ", bypass=" + sce.Utils.prefService.getBoolPref("bypass_self_signed"));
+    if (isSelfSigned) {       // ex: https://www.pcwebshop.co.uk/
+      if (sce.Utils.prefService.getBoolPref("bypass_self_signed"))
+        diag.bypassFlags |= SCE_CERT_SELF_SIGNED;
+      else
+        diag.dontBypassFlags |= SCE_CERT_SELF_SIGNED;
+    }
+
+    var verificationResult = cert.verifyForUsage(Ci.nsIX509Cert.CERT_USAGE_SSLServer);
+    sce.Debug.dump("verificationResult: " + verificationResult);
+    // all conditions are exclusive - which is odd because a cert could be
+    // revoked and expired (?)
+    switch (verificationResult) {
+
+    case Ci.nsIX509Cert.ISSUER_NOT_TRUSTED: // implied by self-signed, ex: https://linux.fr
+      sce.Debug.dump("issuer_not_trusted, bypass=" + sce.Utils.prefService.getBoolPref("bypass_issuer_not_trusted"));
+      if (sce.Utils.prefService.getBoolPref("bypass_issuer_not_trusted"))
+        diag.bypassFlags |= Ci.nsIX509Cert.ISSUER_NOT_TRUSTED;
+      else
+        diag.dontBypassFlags |= Ci.nsIX509Cert.ISSUER_NOT_TRUSTED;
+      break;
+
+    case Ci.nsIX509Cert.ISSUER_UNKNOWN: // ex: https://www.cheepcheepboxes.com/
+      sce.Debug.dump("issuer_unknown, bypass=" + sce.Utils.prefService.getBoolPref("bypass_issuer_unknown"));
+      if (sce.Utils.prefService.getBoolPref("bypass_issuer_unknown"))
+        diag.bypassFlags |= Ci.nsIX509Cert.ISSUER_UNKNOWN;
+      else
+        diag.dontBypassFlags |= Ci.nsIX509Cert.ISSUER_UNKNOWN;
+      break;
+
+    case Ci.nsIX509Cert.VERIFIED_OK: // ignored
+      break; // keep ignoreFlags null to have tag "unknown"
+    case Ci.nsIX509Cert.NOT_VERIFIED_UNKNOWN: // ignored
+    case Ci.nsIX509Cert.CERT_REVOKED: // ignored, // OCSP ex: https://test-sspev.verisign.com:2443/test-SSPEV-revoked-verisign.html
+    case Ci.nsIX509Cert.CERT_EXPIRED: // ignored // ex: https://www.mjvmobile.com.br/
+    case Ci.nsIX509Cert.CERT_NOT_TRUSTED: // ignored
+    case Ci.nsIX509Cert.INVALID_CA: // ignored
+    case Ci.nsIX509Cert.USAGE_NOT_ALLOWED: // ignored
+      diag.ignoreFlags |= verificationResult;
+      break;
+
+    default:
+      Components.utils.reportError(
+        "SkipCertError: unknown cert verification: " + verificationResult);
+      break;
+    }
+
+    /*
+     * CAUTION: verificationResult (see later) can be 0, but cert still bad:
+     * either because of SSLStatus.is*, or because OCSP query not issued yet
+     */
+    /*
+     * NOTE: any of UNKNOWN_ISSUER, CA_CERT_INVALID, UNTRUSTED_ISSUER,
+     * EXPIRED_ISSUER_CERTIFICATE, UNTRUSTED_CERT, INADEQUATE_KEY_USAGE
+     * triggers nsICertOverrideService::ERROR_UNTRUSTED (nsNSSIOLayer.cpp)
+     */
+    if(aSSLStatus.isUntrusted) {
+      sce.Debug.dump("aSSLStatus.isUntrusted");
+      // ignoreFlags will be null => 'unknown'
+    }
+    if(aSSLStatus.isDomainMismatch) { // ex: https://amazon.com/
+      if (sce.Utils.prefService.getBoolPref("bypass_domain_mismatch"))
+        diag.bypassFlags |= SCE_SSL_DOMAIN_MISMATCH;
+      else
+        diag.dontBypassFlags |= SCE_SSL_DOMAIN_MISMATCH;
+    }
+    if(aSSLStatus.isNotValidAtThisTime) {
+      sce.Debug.dump("aSSLStatus.isNotValidAtThisTime");
+      diag.ignoreFlags |= SCE_SSL_NOT_VALID;
+    }
+
+    return diag;
+  },
+
+  isBypassDomain: function(host) {
+    var bypassDomains = ['linuxfr.org']; // TODO: pref bypass_domains
+    for (let i=0, len=bypassDomains.length; i<len; ++i) {
+      var domain = bypassDomains[0];
+      var re = new RegExp(domain.replace(/\./g, "\\.")+"$");
+      if (re.test(host)) return domain;
+    }
+    return null;
   },
 
   notify: function(abrowser) {
@@ -168,6 +278,10 @@ var sceChrome = {
     var msgArgs = [];
     var priority = null;  // notificationBox.PRIORITY_INFO_LOW not working ??
     switch (this.notification.type) {
+    case 'exceptionAddedKnownDomain':
+      msgArgs = [isTemporaryException, this.notification.host, this.notification.bypassDomain];
+      priority = 'PRIORITY_INFO_LOW';
+      break;
     case 'exceptionAdded':
       msgArgs = [isTemporaryException, this.notification.host, this.notification.bypassTag];
       priority = 'PRIORITY_INFO_LOW';
@@ -280,16 +394,16 @@ var sceChrome = {
       if (port == -1) port = 443; // thx http://gitorious.org/perspectives-notary-server/
       var hostWithPort = uri.host + ":" + port;
       sceChrome.notification.host = uri.host;
-      var SSLStatus = sceChrome.recentCertsService.getRecentBadCert(hostWithPort);
+      var aSSLStatus = sceChrome.recentCertsService.getRecentBadCert(hostWithPort);
 
-      if (!SSLStatus) {
+      if (!aSSLStatus) {
         sce.Debug.dump("no SSLStatus for: " + hostWithPort);
         return;
       }
 
-      sce.Debug.dump("SSLStatus");
-      sce.Debug.dumpObj(SSLStatus);
-      var cert = SSLStatus.serverCert;
+      sce.Debug.dump("aSSLStatus");
+      sce.Debug.dumpObj(aSSLStatus);
+      var cert = aSSLStatus.serverCert;
       sce.Debug.dump("cert");
       sce.Debug.dumpObj(cert);
 
@@ -300,117 +414,35 @@ var sceChrome = {
         return;
       }
 
-      // Determine cert problems.
-      /* Question is: IN WHICH CASES DO WE GET THE CERTERROR ?
-       *
-       * We know: there are 2 classes of errors: ERROR_CLASS_BAD_CERT,
-       * ERROR_CLASS_SSL_PROTOCOL. We believe certerror is triggered when some
-       * SSLStatus.is* are set (bitarray) OR verificationResult != 0 (exclusive
-       * conditions)
-       *
-       * For now, we'll make it simple: if *all* encountered conditions are set
-       * to bypass (see options), then we bypass. If some aren't set, we don't
-       * bypass and notify. For all other errors, we don't bypass, and notify
-       * "error not handled by SkipCertError"
-       */
-      var bypassFlags = 0;
-      var dontBypassFlags = 0; // we record when bypass conditions encountered
-                               // but not set in options
-      var ignoreFlags = null;
+      var domainBypass = sceChrome.isBypassDomain(uri.host);
+      sce.Debug.dump("*** domainBypass="+domainBypass);
 
-      // we're only interested in certs with characteristics
-      // defined in options (self-signed, issuer unknown, ...)
-      cert.QueryInterface(Ci.nsIX509Cert3);
-      var isSelfSigned = cert.isSelfSigned;
-      sce.Debug.dump("isSelfSigned:" + isSelfSigned + ", bypass=" + sce.Utils.prefService.getBoolPref("bypass_self_signed"));
-      if (isSelfSigned) {       // ex: https://www.pcwebshop.co.uk/
-        if (sce.Utils.prefService.getBoolPref("bypass_self_signed"))
-          bypassFlags |= SCE_CERT_SELF_SIGNED;
-        else
-          dontBypassFlags |= SCE_CERT_SELF_SIGNED;
-      }
+      if (domainBypass) {
+        sceChrome._addCertException(aSSLStatus, uri);
+        sceChrome.notification.type = 'exceptionAddedKnownDomain';
+        sceChrome.notification.bypassDomain = domainBypass;
 
-      var verificationResult = cert.verifyForUsage(Ci.nsIX509Cert.CERT_USAGE_SSLServer);
-      sce.Debug.dump("verificationResult: " + verificationResult);
-      // all conditions are exclusive - which is odd because a cert could be
-      // revoked and expired (?)
-      switch (verificationResult) {
-
-      case Ci.nsIX509Cert.ISSUER_NOT_TRUSTED: // implied by self-signed, ex: https://linux.fr
-        sce.Debug.dump("issuer_not_trusted, bypass=" + sce.Utils.prefService.getBoolPref("bypass_issuer_not_trusted"));
-        if (sce.Utils.prefService.getBoolPref("bypass_issuer_not_trusted"))
-          bypassFlags |= Ci.nsIX509Cert.ISSUER_NOT_TRUSTED;
-        else
-          dontBypassFlags |= Ci.nsIX509Cert.ISSUER_NOT_TRUSTED;
-        break;
-
-      case Ci.nsIX509Cert.ISSUER_UNKNOWN: // ex: https://www.cheepcheepboxes.com/
-        sce.Debug.dump("issuer_unknown, bypass=" + sce.Utils.prefService.getBoolPref("bypass_issuer_unknown"));
-        if (sce.Utils.prefService.getBoolPref("bypass_issuer_unknown"))
-          bypassFlags |= Ci.nsIX509Cert.ISSUER_UNKNOWN;
-        else
-          dontBypassFlags |= Ci.nsIX509Cert.ISSUER_UNKNOWN;
-        break;
-
-      case Ci.nsIX509Cert.VERIFIED_OK: // ignored
-        break; // keep ignoreFlags null to have tag "unknown"
-      case Ci.nsIX509Cert.NOT_VERIFIED_UNKNOWN: // ignored
-      case Ci.nsIX509Cert.CERT_REVOKED: // ignored, // OCSP ex: https://test-sspev.verisign.com:2443/test-SSPEV-revoked-verisign.html
-      case Ci.nsIX509Cert.CERT_EXPIRED: // ignored // ex: https://www.mjvmobile.com.br/
-      case Ci.nsIX509Cert.CERT_NOT_TRUSTED: // ignored
-      case Ci.nsIX509Cert.INVALID_CA: // ignored
-      case Ci.nsIX509Cert.USAGE_NOT_ALLOWED: // ignored
-        ignoreFlags |= verificationResult;
-        break;
-
-      default:
-        Components.utils.reportError(
-          "SkipCertError: unknown cert verification: " + verificationResult);
-        break;
-      }
-
-      /*
-       * CAUTION: verificationResult (see later) can be 0, but cert still bad:
-       * either because of SSLStatus.is*, or because OCSP query not issued yet
-       */
-      /*
-       * NOTE: any of UNKNOWN_ISSUER, CA_CERT_INVALID, UNTRUSTED_ISSUER,
-       * EXPIRED_ISSUER_CERTIFICATE, UNTRUSTED_CERT, INADEQUATE_KEY_USAGE
-       * triggers nsICertOverrideService::ERROR_UNTRUSTED (nsNSSIOLayer.cpp)
-       */
-      if(SSLStatus.isUntrusted) {
-        sce.Debug.dump("SSLStatus.isUntrusted");
-        // ignoreFlags will be null => 'unknown'
-      }
-      if(SSLStatus.isDomainMismatch) { // ex: https://amazon.com/
-        if (sce.Utils.prefService.getBoolPref("bypass_domain_mismatch"))
-          bypassFlags |= SCE_SSL_DOMAIN_MISMATCH;
-        else
-          dontBypassFlags |= SCE_SSL_DOMAIN_MISMATCH;
-      }
-      if(SSLStatus.isNotValidAtThisTime) {
-        sce.Debug.dump("SSLStatus.isNotValidAtThisTime");
-        ignoreFlags |= SCE_SSL_NOT_VALID;
-      }
-
-      var bypassTags = this._parseBadCertFlags(bypassFlags);
-      sce.Debug.dump("bypassFlags=" + bypassFlags + ", " + bypassTags);
-      var dontBypassTags = this._parseBadCertFlags(dontBypassFlags);
-      sce.Debug.dump("dontBypassFlags=" + dontBypassFlags + ", " + dontBypassTags);
-      var ignoreTags = this._parseBadCertFlags(ignoreFlags);
-      sce.Debug.dump("ignoreFlags=" + ignoreFlags + ", " + ignoreTags);
-
-      // Add cert exception (if bypass allowed by options)
-      if (dontBypassFlags) {    // ALL conditions must be set
-        sceChrome.notification.type = 'exceptionNotAdded';
-        sceChrome.notification.bypassTag = dontBypassTags;
-      } else if (bypassFlags) {
-        sceChrome._addCertException(SSLStatus, uri, cert);
-        sceChrome.notification.type = 'exceptionAdded';
-        sceChrome.notification.bypassTag = bypassTags;
       } else {
-        sceChrome.notification.type = 'exceptionIgnored';
-        sceChrome.notification.bypassTag = ignoreTags;
+        var certDiag = sceChrome.certDiagnostic(aSSLStatus);
+
+        // Add cert exception (if bypass allowed by options)
+        if (certDiag.dontBypassFlags) {    // ALL conditions must be set
+          sceChrome.notification.type = 'exceptionNotAdded';
+          var dontBypassTags = this._parseBadCertFlags(certDiag.dontBypassFlags);
+          sce.Debug.dump("dontBypassFlags=" + certDiag.dontBypassFlags + ", " + dontBypassTags);
+          sceChrome.notification.bypassTag = dontBypassTags;
+        } else if (certDiag.bypassFlags) {
+          sceChrome._addCertException(aSSLStatus, uri);
+          sceChrome.notification.type = 'exceptionAdded';
+          var bypassTags = this._parseBadCertFlags(certDiag.bypassFlags);
+          sce.Debug.dump("bypassFlags=" + certDiag.bypassFlags + ", " + bypassTags);
+          sceChrome.notification.bypassTag = bypassTags;
+        } else {
+          sceChrome.notification.type = 'exceptionIgnored';
+          var ignoreTags = this._parseBadCertFlags(certDiag.ignoreFlags);
+          sce.Debug.dump("ignoreFlags=" + certDiag.ignoreFlags + ", " + ignoreTags);
+          sceChrome.notification.bypassTag = ignoreTags;
+        }
       }
 
       // trigger notification
