@@ -245,10 +245,12 @@ var sceChrome = {
   },
 
   isBypassDomain: function(host) {
-    var bypassDomains = ['linuxfr.org']; // TODO: pref bypass_domains
+    var bypassDomains = sce.Utils.getArrayPref('bypass_domains');
+    sce.Debug.dump("*** bypassDomains");
+    sce.Debug.dumpObj(bypassDomains);
     for (let i=0, len=bypassDomains.length; i<len; ++i) {
-      var domain = bypassDomains[0];
-      var re = new RegExp(domain.replace(/\./g, "\\.")+"$");
+      let domain = bypassDomains[i];
+      let re = new RegExp(domain.replace(/\./g, "\\.")+"$");
       if (re.test(host)) return domain;
     }
     return null;

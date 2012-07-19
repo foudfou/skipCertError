@@ -9,6 +9,7 @@ Components.utils.import("resource://sce/commons.js");
 var sceUIOptions = {
 
   onLoad: function() {
+    this.fillBypassDomains();
     this.toggleDisable_All(sce.Utils.prefService.getBoolPref('enabled'));
     this.toggleCheck_BypassIssuerNotTrusted(
       document.getElementById('ui_bypass_self_signed').checked);
@@ -17,6 +18,7 @@ var sceUIOptions = {
   toggleDisable_All: function(enabledIsChecked) {
     document.getElementById('ui_add_temporary_exceptions').disabled = !enabledIsChecked;
     document.getElementById('ui_notify').disabled = !enabledIsChecked;
+    document.getElementById('ui_bypass_domains').disabled = !enabledIsChecked;
     this.toggleDisable_BypassErrors(enabledIsChecked);
    },
 
@@ -41,5 +43,17 @@ var sceUIOptions = {
       document.getElementById('ui_bypass_issuer_not_trusted').disabled = false;
     }
   },
+
+  fillBypassDomains: function() {
+    var domains = sce.Utils.getArrayPref("bypass_domains");
+    var domainsStr = domains.join("\n");
+    document.getElementById('ui_bypass_domains').value = domainsStr;
+  },
+
+  parseBypassDomains: function(text) {
+    var domains = text.replace(/\r\n/g, "\n").split("\n");
+    domains = domains.filter(function(e){return (/^\s*$/.test(e)) ? false : true;});
+    sce.Utils.setArrayPref("bypass_domains", domains);
+  }
 
 };

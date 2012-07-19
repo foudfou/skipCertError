@@ -80,4 +80,44 @@ sce.Utils = {
     return request ? request.name : null;
   },
 
+  getObjPref: function(prefStr) {
+    try {
+      var objPref = JSON.parse(
+        sce.Utils.prefService.getCharPref(prefStr));
+    } catch (x) {
+      sce.Debug.dump(x);
+    }
+    return objPref;
+  },
+  setObjPref: function(prefStr, obj) {
+    sce.Debug.dumpObj(obj);
+    try {
+      sce.Utils.prefService.setCharPref(prefStr, JSON.stringify(obj));
+    } catch (x) {
+      sce.Debug.dump(x);
+    }
+  },
+
+  getArrayPref: function(prefStr) {
+    let arrayPref = this.getObjPref(prefStr);
+    if (!sce.js.isArray(arrayPref)) throw new TypeError();
+    return arrayPref;
+  },
+  setArrayPref: function(prefStr, aArray) {
+    if (!sce.js.isArray(aArray)) throw new TypeError();
+    this.setObjPref(prefStr, aArray);
+  }
+
 };
+
+
+sce.js = {
+  // http://stackoverflow.com/questions/767486/how-do-you-check-if-a-variable-is-an-array-in-javascript
+  isArray: function(o) {
+    return this.getType(o) === '[object Array]';
+  },
+  getType: function(thing) {
+    if(thing === null) return "[object Null]"; // special case
+    return Object.prototype.toString.call(thing);
+  }
+}

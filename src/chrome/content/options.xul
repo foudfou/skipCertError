@@ -41,6 +41,11 @@
       <checkbox id="ui_notify" preference="pref_bool_notify"
                 label="&bool_notify.label;"
                 accesskey="&bool_notify.accesskey;"/>
+      <label control="ui_bypass_domains" value="&bypass_domains.label;" />
+      <textbox id="ui_bypass_domains" multiline="true"
+               placeholder="&bypass_domains.tooltip;"
+               tooltiptext="&bypass_domains.tooltip;"
+               onchange="sceUIOptions.parseBypassDomains(this.value);sceUIOptions.fillBypassDomains()" />
       <groupbox id="ui_bypass_errors">
         <caption label="&bypass_errors;"/>
         <checkbox id="ui_bypass_self_signed"

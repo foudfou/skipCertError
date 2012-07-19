@@ -5,6 +5,7 @@ pref("extensions.skipcerterror@foudil.fr.description", "chrome://sce/locale/over
 pref("extensions.sce.enabled", true);
 pref("extensions.sce.add_temporary_exceptions", true);
 pref("extensions.sce.notify", true);
+pref("extensions.sce.bypass_domains", '[]');
 pref("extensions.sce.bypass_issuer_not_trusted", true);
 pref("extensions.sce.bypass_issuer_unknown", true);
 pref("extensions.sce.bypass_self_signed", true);

@@ -6,6 +6,8 @@
 <!ENTITY bool_add_temporary_exceptions.accesskey "T">
 <!ENTITY bool_notify.label "Notifications">
 <!ENTITY bool_notify.accesskey "N">
+<!ENTITY bypass_domains.label "Skip domains:">
+<!ENTITY bypass_domains.tooltip "One by line (e.g. '.mozilla.org'). Precedes all other conditions">
 <!ENTITY bypass_errors "Bypass error when cert:">
 <!ENTITY bool_bypass_issuer_not_trusted.label "is from untrusted issuer">
 <!ENTITY bool_bypass_issuer_not_trusted.accesskey "U">
