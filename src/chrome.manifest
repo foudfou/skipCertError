@@ -1,5 +1,6 @@
 content		sce			chrome/content/
 skin		sce	classic/1.0	chrome/skin/
+locale		sce	de		chrome/locale/de/
 locale		sce	en-US		chrome/locale/en-US/
 locale		sce	fr		chrome/locale/fr/
 locale		sce	sv-SE		chrome/locale/sv-SE/
