@@ -6,8 +6,8 @@
 <!ENTITY bool_add_temporary_exceptions.accesskey "G">
 <!ENTITY bool_notify.label "Uyarılar">
 <!ENTITY bool_notify.accesskey "U">
-<!ENTITY bypass_domains.label "Skip domains:">
-<!ENTITY bypass_domains.tooltip "One by line (e.g. '.mozilla.org'). Precedes all other conditions">
+<!ENTITY bypass_domains.label "Domain whitelist:">
+<!ENTITY bypass_domains.tooltip "One domain by line (e.g.: .mozilla.org) — BYPASSED WITHOUT CHECKING !">
 <!ENTITY bypass_errors "Sertifika şu durumdaysa hatayı atla:">
 <!ENTITY bool_bypass_issuer_not_trusted.label "yayınlayıcı güvenilmezse">
 <!ENTITY bool_bypass_issuer_not_trusted.accesskey "G">

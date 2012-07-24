@@ -6,8 +6,8 @@
 <!ENTITY bool_add_temporary_exceptions.accesskey "T">
 <!ENTITY bool_notify.label "提醒">
 <!ENTITY bool_notify.accesskey "N">
-<!ENTITY bypass_domains.label "Skip domains:">
-<!ENTITY bypass_domains.tooltip "One by line (e.g. '.mozilla.org'). Precedes all other conditions">
+<!ENTITY bypass_domains.label "Domain whitelist:">
+<!ENTITY bypass_domains.tooltip "One domain by line (e.g.: .mozilla.org) — BYPASSED WITHOUT CHECKING !">
 <!ENTITY bypass_errors "跳过错误，如果证书：">
 <!ENTITY bool_bypass_issuer_not_trusted.label "来自不受信任的发行者">
 <!ENTITY bool_bypass_issuer_not_trusted.accesskey "U">
