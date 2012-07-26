@@ -1,13 +1,13 @@
-<!ENTITY prefwindow.title "Skip Cert Error首选项">
-<!ENTITY pane1.title "Skip Cert Error首选项">
+<!ENTITY prefwindow.title "Skip Cert Error 首选项">
+<!ENTITY pane1.title "Skip Cert Error 首选项">
 <!ENTITY bool_enabled.label "启用跳过错误">
 <!ENTITY bool_enabled.accesskey "E">
 <!ENTITY bool_add_temporary_exceptions.label "添加一个临时例外">
 <!ENTITY bool_add_temporary_exceptions.accesskey "T">
 <!ENTITY bool_notify.label "提醒">
 <!ENTITY bool_notify.accesskey "N">
-<!ENTITY bypass_domains.label "Domain whitelist:">
-<!ENTITY bypass_domains.tooltip "One domain by line (e.g.: .mozilla.org) — BYPASSED WITHOUT CHECKING !">
+<!ENTITY bypass_domains.label "域名白名单：">
+<!ENTITY bypass_domains.tooltip "每行一个域(例如：.mozilla.org) — 它们将不经检查跳过！">
 <!ENTITY bypass_errors "跳过错误，如果证书：">
 <!ENTITY bool_bypass_issuer_not_trusted.label "来自不受信任的发行者">
 <!ENTITY bool_bypass_issuer_not_trusted.accesskey "U">
@@ -15,5 +15,5 @@
 <!ENTITY bool_bypass_issuer_unknown.accesskey "I">
 <!ENTITY bool_bypass_self_signed.label "是自签名的">
 <!ENTITY bool_bypass_self_signed.accesskey "G">
-<!ENTITY bool_bypass_domain_mismatch.label "不匹配域名">
+<!ENTITY bool_bypass_domain_mismatch.label "不匹配域">
 <!ENTITY bool_bypass_domain_mismatch.accesskey "D">
