@@ -7,8 +7,8 @@
     <em:name>Skip Cert Error</em:name>
     <em:version>0.3.3</em:version>
     <em:creator>Foudil BRÉTEL</em:creator>
-    <em:homepageURL>https://github.com/foudfou/skipCertError</em:homepageURL>
     <em:description>Skip SSL/TLS certificate error page.</em:description>
+    <em:homepageURL>https://github.com/foudfou/skipCertError</em:homepageURL>
     <em:optionsURL>chrome://sce/content/options.xul</em:optionsURL>
     <em:iconURL>chrome://sce/skin/icon48.png</em:iconURL>
     <em:icon64URL>chrome://sce/skin/icon64.png</em:icon64URL>
@@ -21,13 +21,60 @@
       </Description>
     </em:targetApplication>
 
+    <em:localized>
+      <Description>
+        <em:locale>fr</em:locale>
+        <em:description>Outrepasse la page d'erreur SSL/TLS.</em:description>
+      </Description>
+    </em:localized>
+
+    <em:localized>
+      <Description>
+        <em:locale>de</em:locale>
+        <em:translator>Erwin D. Glockner (erglo)</em:translator>
+        <em:description>Seiten mit SSL/TLS-Zertifikats-Fehlermeldungen umgehen.</em:description>
+      </Description>
+    </em:localized>
+
+    <em:localized>
+      <Description>
+        <em:locale>nl</em:locale>
+        <em:translator>markh van BabelZilla.org</em:translator>
+      </Description>
+    </em:localized>
+
+    <em:localized>
+      <Description>
+        <em:locale>sr</em:locale>
+        <em:translator>ДакСРБИЈА (DakSrbija)</em:translator>
+      </Description>
+    </em:localized>
+
+    <em:localized>
+      <Description>
+        <em:locale>sv-SE</em:locale>
+        <em:translator>Mikael Hiort af Ornäs</em:translator>
+      </Description>
+    </em:localized>
+
+    <em:localized>
+      <Description>
+        <em:locale>tr</em:locale>
+        <em:translator>Sinan Kaan Yerli (skyerli.org)</em:translator>
+      </Description>
+    </em:localized>
+
+    <em:localized>
+      <Description>
+        <em:locale>zn-CN</em:locale>
+        <em:translator>Wang.H.K</em:translator>
+      </Description>
+    </em:localized>
+
+
+
     <em:contributor>Johnathan Nightingale (MITMME original author)</em:contributor>
     <em:contributor>Andras TIM (MITMME maintainer)</em:contributor>
-
-    <em:translator>Erwin D. Glockner (erglo) [de]</em:translator>
-    <em:translator>Mikael Hiort af Ornäs [sv-SE]</em:translator>
-    <em:translator>Sinan Kaan Yerli (skyerli.org) [tr]</em:translator>
-    <em:translator>Wang.H.K [zn-CN]</em:translator>
 
   </Description>
 </RDF>

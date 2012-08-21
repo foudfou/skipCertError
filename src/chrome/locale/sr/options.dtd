@@ -1,0 +1,19 @@
+<!ENTITY prefwindow.title "Skip Cert Error - подешавања">
+<!ENTITY pane1.title "Skip Cert Error - подешавања">
+<!ENTITY bool_enabled.label "Омогући заобилажење">
+<!ENTITY bool_enabled.accesskey "з">
+<!ENTITY bool_add_temporary_exceptions.label "Изузетке додај као привремене">
+<!ENTITY bool_add_temporary_exceptions.accesskey "п">
+<!ENTITY bool_notify.label "Обавештења">
+<!ENTITY bool_notify.accesskey "О">
+<!ENTITY bypass_domains.label "Проверени домени:">
+<!ENTITY bypass_domains.tooltip "Један домен по линији (нпр. .mozilla.org — ЗАОБИЛАЖЕЊЕ БЕЗ ПРОВЕРАВАЊА)">
+<!ENTITY bypass_errors "Заобиђигрешку када сертификат:">
+<!ENTITY bool_bypass_issuer_not_trusted.label "издаје непоуздан издавач">
+<!ENTITY bool_bypass_issuer_not_trusted.accesskey "п">
+<!ENTITY bool_bypass_issuer_unknown.label "потиче од непознатог издавача">
+<!ENTITY bool_bypass_issuer_unknown.accesskey "н">
+<!ENTITY bool_bypass_self_signed.label "буде самопотписан">
+<!ENTITY bool_bypass_self_signed.accesskey "о">
+<!ENTITY bool_bypass_domain_mismatch.label "не поклапа се да доменом">
+<!ENTITY bool_bypass_domain_mismatch.accesskey "д">
