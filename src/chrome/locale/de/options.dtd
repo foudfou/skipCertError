@@ -7,7 +7,7 @@
 <!ENTITY bool_notify.label "Benachrichtigungen">
 <!ENTITY bool_notify.accesskey "B">
 <!ENTITY bypass_domains.label "Domain Whitelist:">
-<!ENTITY bypass_domains.tooltip "Eine Domain pro Zeile (z.B.: .mozilla.org) — UMGEHUNG OHNE KONTROLLE !"
+<!ENTITY bypass_domains.tooltip "Eine Domain pro Zeile (z.B.: .mozilla.org) — UMGEHUNG OHNE KONTROLLE !">
 <!ENTITY bypass_errors "Zertifikats-Fehlermeldungen umgehen, wenn:">
 <!ENTITY bool_bypass_issuer_not_trusted.label "der Aussteller nicht vertrauenswürdig ist">
 <!ENTITY bool_bypass_issuer_not_trusted.accesskey "n">
