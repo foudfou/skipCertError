@@ -184,7 +184,7 @@ var sceChrome = {
     // revoked and expired (?)
     switch (verificationResult) {
 
-    case Ci.nsIX509Cert.ISSUER_NOT_TRUSTED: // implied by self-signed, ex: https://linux.fr
+    case Ci.nsIX509Cert.ISSUER_NOT_TRUSTED: // implied by self-signed, ex: https://linuxfr.org
       sce.Debug.dump("issuer_not_trusted, bypass=" + sce.Utils.prefService.getBoolPref("bypass_issuer_not_trusted"));
       if (sce.Utils.prefService.getBoolPref("bypass_issuer_not_trusted"))
         diag.bypassFlags |= Ci.nsIX509Cert.ISSUER_NOT_TRUSTED;
@@ -203,8 +203,13 @@ var sceChrome = {
     case Ci.nsIX509Cert.VERIFIED_OK: // ignored
       break; // keep ignoreFlags null to have tag "unknown"
     case Ci.nsIX509Cert.NOT_VERIFIED_UNKNOWN: // ignored
-    case Ci.nsIX509Cert.CERT_REVOKED: // ignored, // OCSP ex: https://test-sspev.verisign.com:2443/test-SSPEV-revoked-verisign.html
-    case Ci.nsIX509Cert.CERT_EXPIRED: // ignored // ex: https://www.mjvmobile.com.br/
+    case Ci.nsIX509Cert.CERT_REVOKED: // ignored,
+      // OCSP ex:
+      // https://test-sspev.verisign.com:2443/test-SSPEV-revoked-verisign.html
+      // you need to import http://crl.verisign.com/universal-root.crl
+      // see also http://www.mozilla.org/projects/security/certs/included/
+    case Ci.nsIX509Cert.CERT_EXPIRED: // ignored
+      // ex: https://www.mjvmobile.com.br/
     case Ci.nsIX509Cert.CERT_NOT_TRUSTED: // ignored
     case Ci.nsIX509Cert.INVALID_CA: // ignored
     case Ci.nsIX509Cert.USAGE_NOT_ALLOWED: // ignored
