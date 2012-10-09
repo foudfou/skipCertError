@@ -1,0 +1,19 @@
+<!ENTITY prefwindow.title "Skip Cert Error-voorkeuren">
+<!ENTITY pane1.title "Skip Cert Error-voorkeuren">
+<!ENTITY bool_enabled.label "Overslaan inschakelen">
+<!ENTITY bool_enabled.accesskey "I">
+<!ENTITY bool_add_temporary_exceptions.label "Uitzonderingen tijdelijk toevoegen">
+<!ENTITY bool_add_temporary_exceptions.accesskey "T">
+<!ENTITY bool_notify.label "Berichten">
+<!ENTITY bool_notify.accesskey "B">
+<!ENTITY bypass_domains.label "Witte lijst domeinen:">
+<!ENTITY bypass_domains.tooltip "Eén domein per regel (b.v. mozilla.org) - OVERGESLAGEN ZONDER CONTROLE!">
+<!ENTITY bypass_errors "Bypassfout wanneer certificaat:">
+<!ENTITY bool_bypass_issuer_not_trusted.label "afkomstig is van niet-vertrouwde uitgever">
+<!ENTITY bool_bypass_issuer_not_trusted.accesskey "U">
+<!ENTITY bool_bypass_issuer_unknown.label "afkomstig is van onbekende uitgever">
+<!ENTITY bool_bypass_issuer_unknown.accesskey "k">
+<!ENTITY bool_bypass_self_signed.label "zelf ondertekend is">
+<!ENTITY bool_bypass_self_signed.accesskey "Z">
+<!ENTITY bool_bypass_domain_mismatch.label "niet met domein overeenkomt">
+<!ENTITY bool_bypass_domain_mismatch.accesskey "D">
