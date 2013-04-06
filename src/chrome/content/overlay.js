@@ -51,8 +51,7 @@ var sceChrome = {
       this.overrideService =
         Cc["@mozilla.org/security/certoverride;1"]
         .getService(Components.interfaces.nsICertOverrideService);
-      this.recentCertsService = Cc["@mozilla.org/security/recentbadcerts;1"]
-        .getService(Ci.nsIRecentBadCertsService);
+      this.recentCertsService = this._initBadCertService();
     }
     catch (ex) {
       Components.utils.reportError("SkipCertError: " + ex);
@@ -109,6 +108,18 @@ var sceChrome = {
       var enable = sce.Utils.prefService.getBoolPref('enabled');
       this._toggle(enable);
       break;
+    }
+  },
+
+  _initBadCertService: function() {
+    if (Cc["@mozilla.org/security/recentbadcerts;1"])
+      return Cc["@mozilla.org/security/recentbadcerts;1"]
+      .getService(Ci.nsIRecentBadCertsService);
+    else {                      // Gecko 20+
+      let isPrivate = false;
+      return Cc["@mozilla.org/security/x509certdb;1"]
+      .getService(Ci.nsIX509CertDB)
+      .getRecentBadCerts(isPrivate);
     }
   },
 
