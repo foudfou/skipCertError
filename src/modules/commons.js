@@ -6,17 +6,12 @@
  * http://developer.mozilla.org/en/XUL_School/JavaScript_Object_Management.html
  */
 
-var EXPORTED_SYMBOLS = [ "sce", "SCE_CERT_SELF_SIGNED",
-  "SCE_SSL_DOMAIN_MISMATCH", "SCE_SSL_NOT_VALID" ];
+var EXPORTED_SYMBOLS = [ "sce" ];
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-/* SCE Constants */
-// custom const to keep track of cert errors
-const SCE_CERT_SELF_SIGNED     = 1 << 8;
-const SCE_SSL_DOMAIN_MISMATCH  = 1 << 9;
-const SCE_SSL_NOT_VALID        = 1 << 10;
+Components.utils.import("resource://sce/logging.jsm");
 
 /**
  * sce namespace.

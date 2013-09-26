@@ -37,11 +37,11 @@ var sceUIOptions = {
 
   toggleCheck_BypassIssuerNotTrusted: function(selfSignedIsChecked) {
     if (selfSignedIsChecked) {
-      document.getElementById('ui_bypass_issuer_not_trusted').checked = selfSignedIsChecked;
-      document.getElementById('ui_bypass_issuer_not_trusted').disabled = true;
-    } else {
-      document.getElementById('ui_bypass_issuer_not_trusted').disabled = false;
+      document.getElementById('ui_bypass_issuer_not_trusted').checked  = true;
+      sce.Utils.prefService.setBoolPref("bypass_issuer_not_trusted", true);
     }
+    document.getElementById('ui_bypass_issuer_not_trusted').disabled =
+      selfSignedIsChecked;
   },
 
   fillBypassDomains: function() {

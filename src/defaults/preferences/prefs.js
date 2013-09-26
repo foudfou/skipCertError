@@ -10,6 +10,7 @@ pref("extensions.sce.bypass_issuer_not_trusted", true);
 pref("extensions.sce.bypass_issuer_unknown", true);
 pref("extensions.sce.bypass_self_signed", true);
 pref("extensions.sce.bypass_domain_mismatch", false);
+pref("extensions.sce.single_click_skip", false);
 
 // Set the environment settings
 pref("browser.ssl_override_behavior", 2);
