@@ -377,7 +377,6 @@ var sceChrome = {
     // onSecurityChange, onStateChange, ...
     goto_: null,                  // target URL when after certerr encountered
     _certerrorCount: 0,           // certerr seems called more than once...
-    _targetURI: {},               // tabIndex -> URI
 
     _parseBadCertFlags: function(flags) {
       var tag = '';
@@ -427,9 +426,11 @@ var sceChrome = {
       scelog.debug("onSecurityChange: uri=" + uri.prePath);
 
       if (!uri.schemeIs("https")) return;
-      if (!(aState & Ci.nsIWebProgressListener.STATE_IS_INSECURE)) return;
-      // TESTING
+      if (!(aState & (Ci.nsIWebProgressListener.STATE_IS_INSECURE
+                      | Ci.nsIWebProgressListener.STATE_IS_BROKEN))) // restoring "broken" https
+        return;
       if (sce.Utils.prefService.getBoolPref('single_click_skip')) return;
+      scelog.debug("single_click_skip false");
 
       this._certerrorCount = 0; // reset
 
@@ -483,33 +484,11 @@ var sceChrome = {
 
       // trigger notification
       if (sce.Utils.prefService.getBoolPref('notify')) {
-        let tabIndex = this._getTabIndex(aBrowser);
-        let target = this._targetURI[tabIndex];
-        if (!target) {
-          this._targetURI[tabIndex] = uri;
-          scelog.debug("_targetURI for "+tabIndex+" set to " + uri.spec);
-        }
-
         sceChrome.notification.willNotify = true;
         scelog.debug("onSecurityChange: willNotify -> " + sceChrome.notification.willNotify);
       }
 
     }, // END onSecurityChange
-
-    _getTabIndex: function(abrowser) {
-      var tabbrowser = abrowser.getTabBrowser();
-      var tabContainer = tabbrowser.tabs;
-
-      var tabIndex = null;
-      for (var i = 0; i < tabContainer.length; ++i) {
-        if (abrowser == tabbrowser.getBrowserAtIndex(i)) {
-          tabIndex = i;
-          break;
-        }
-      }
-
-      return tabIndex;
-    },
 
     _replaceExceptionDialogButton: function(doc, browser) {
       let exceptionDialogButton = doc.getElementById('exceptionDialogButton');
@@ -552,7 +531,7 @@ var sceChrome = {
         // aWebProgress.DOMWindow is the tab/window which triggered the change.
         var originDoc = aWebProgress.DOMWindow.document;
         var originURI = originDoc.documentURI;
-        scelog.debug("onStateChange " + this._getTabIndex(aBrowser) + ": originURI=" + originURI);
+        scelog.debug("originURI="+originURI);
 
         if (/^about:certerr/.test(originURI)) {
           this._certerrorCount++;
@@ -588,19 +567,10 @@ var sceChrome = {
     }, // END onStateChange
 
     onLocationChange: function(aBrowser, aWebProgress, aRequest, aLocation, aFlags) {
-      let tabIndex = this._getTabIndex(aBrowser);
-      let target = this._targetURI[tabIndex];
-      if ("undefined" != typeof(target)) {
-        scelog.debug("this._targetURI: " + target.spec);
-        if (target && target.equals(aLocation)) {
-          scelog.debug("onLocationChange, target encountered");
-          this._targetURI[tabIndex] = null; // reset
-          if (sceChrome.notification.willNotify) {
-            scelog.debug("onStateChange: willNotify");
-            sceChrome.notify.willNotify = false; // reset
-            sceChrome.notify(aBrowser);
-          }
-        }
+      if (sceChrome.notification.willNotify) {
+        scelog.debug("onStateChange: willNotify");
+        sceChrome.notification.willNotify = false; // reset
+        sceChrome.notify(aBrowser);
       }
     },
 
