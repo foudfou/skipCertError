@@ -20,51 +20,6 @@ if ("undefined" == typeof(sce)) {
   var sce = {};
 };
 
-sce.Debug = {
-  DEBUG_MODE: true,
-
-  initialized: false,
-
-  /**
-   * Object constructor.
-   */
-  init: function() {
-    if (this.initialized) return;
-    this.consoleService = Cc['@mozilla.org/consoleservice;1'].getService(Ci.nsIConsoleService);
-    this.dump("SkipCertError Debug initialized");
-    this.initialized = true;
-  },
-
-  /* Console logging functions */
-  /* NOTE: Web Console inappropriates: doesn't catch all messages */
-  /*
-   * CAUTION: dump() dumpObj() may be stripped from .js files during xpi build.
-   * IT'S IMPORTANT THAT DEBUG CALLS ARE WRITTEN ON A SINGLE LINE !
-   */
-  dump: function(message) { // Debuging function -- prints to javascript console
-    if(!this.DEBUG_MODE) return;
-    this.consoleService.logStringMessage(message);
-  },
-
-  dumpObj: function(obj) {
-    if(!this.DEBUG_MODE) return;
-    var str = "";
-    for(i in obj) {
-      try {
-        str += "obj["+i+"]: " + obj[i] + "\n";
-      } catch(e) {
-        str += "obj["+i+"]: Unavailable\n";
-      }
-    }
-    this.dump(str);
-  },
-
-};
-
-// build it !
-(function() { this.init(); }).
-  apply(sce.Debug);
-
 
 sce.Utils = {
 

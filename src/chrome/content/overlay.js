@@ -165,7 +165,7 @@ var sceChrome = {
   },
 
   updateDiagWithFlagFromPref: function(diag, flag, prefName) {
-    prefVal = sce.Utils.prefService.getBoolPref(prefName),
+    prefVal = sce.Utils.prefService.getBoolPref(prefName);
     scelog.debug(prefName + ", bypass=" + prefVal);
     if (prefVal) {
       diag.bypassFlags |= flag;
@@ -213,8 +213,8 @@ var sceChrome = {
   /*
    * Test with https://www.ssllabs.com/ssltest/index.html
    *
-   * For now, we gather error information from: the NSS request status, the
-   * SSLSatus, and the cert.
+   * For now, we gather error information from 3 sources: the NSS request
+   * status, the SSLSatus, and the cert.
    */
   diagnoseInsecureRequest: function(request) {
     if (!request) return null;
@@ -377,7 +377,7 @@ var sceChrome = {
     // onSecurityChange, onStateChange, ...
     goto_: null,                  // target URL when after certerr encountered
     _certerrorCount: 0,           // certerr seems called more than once...
-    _targetURI: {},               // DOMWindow -> URI
+    _targetURI: {},               // tabIndex -> URI
 
     _parseBadCertFlags: function(flags) {
       var tag = '';
@@ -433,13 +433,6 @@ var sceChrome = {
 
       this._certerrorCount = 0; // reset
 
-      let tabIndex = this._getTabIndex(aBrowser);
-      let target = this._targetURI[tabIndex];
-      if (!target) {
-        this._targetURI[tabIndex] = uri;
-        scelog.debug("_targetURI for "+tabIndex+" set to " + uri.spec);
-      }
-
       let aSSLStatus = sceChrome.getSSLStatusFromBadCertsService(uri);
       if (!aSSLStatus) {
         scelog.debug("no SSLStatus");
@@ -490,6 +483,13 @@ var sceChrome = {
 
       // trigger notification
       if (sce.Utils.prefService.getBoolPref('notify')) {
+        let tabIndex = this._getTabIndex(aBrowser);
+        let target = this._targetURI[tabIndex];
+        if (!target) {
+          this._targetURI[tabIndex] = uri;
+          scelog.debug("_targetURI for "+tabIndex+" set to " + uri.spec);
+        }
+
         sceChrome.notification.willNotify = true;
         scelog.debug("onSecurityChange: willNotify -> " + sceChrome.notification.willNotify);
       }
