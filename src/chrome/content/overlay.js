@@ -175,20 +175,6 @@ var sceChrome = {
     return diag;
   },
 
-  getSSLStatusFromBadCertsService: function(uri) {
-    // retrieve bad cert from nsIRecentBadCertsService
-    /* NOTE: experience shows that nsIRecentBadCertsService will not provide
-     SSLStatus when cert is known or trusted. BUT... cert may also be
-     untrusted, and nsIRecentBadCertsService won't provide SSLStatus (ex:
-     revoked cert provides OCSP server). That's why we might need to get it
-     from aRequest... TODO: for now we don't support OCSP */
-    var port = uri.port;
-    if (port == -1) port = 443; // thx http://gitorious.org/perspectives-notary-server/
-    var hostWithPort = uri.host + ":" + port;
-    sceChrome.notification.host = uri.host;
-    return sceChrome.recentCertsService.getRecentBadCert(hostWithPort);
-  },
-
   getSSLStatusFromRequest: function(request) {
     if (request instanceof Ci.nsIChannel) {
       request.QueryInterface(Ci.nsIChannel);
@@ -216,8 +202,12 @@ var sceChrome = {
    * For now, we gather error information from 3 sources: the NSS request
    * status, the SSLSatus, and the cert.
    */
-  diagnoseInsecureRequest: function(request) {
+  diagnoseInsecureRequest: function(request, sslStatus) {
     if (!request) return null;
+    if ("undefined" === typeof(sslStatus) ||
+        !sslStatus) {
+      sslStatus = this.getSSLStatusFromRequest(request);
+    }
 
     /* For now, we'll make it simple: if *all* encountered conditions are set
      to bypass (see options), then we bypass. If some aren't set, we don't
@@ -258,8 +248,6 @@ var sceChrome = {
     } else {
       scelog.debug("Not for security module");
     }
-
-    let sslStatus = this.getSSLStatusFromRequest(request);
 
     let isSelfSigned = this.isSelfSignedFromSSLStatus(sslStatus);
     if (isSelfSigned) {       // ex: https://www.pcwebshop.co.uk/
@@ -373,8 +361,9 @@ var sceChrome = {
   TabsProgressListener: {
     // can't see the use of implementing QueryInterface(aIID)...
 
-    certExceptionJustAdded: null, // used for communication btw
-    // onSecurityChange, onStateChange, ...
+    // used for communication btw onSecurityChange, onStateChange, ...
+    certExceptionJustAdded: null,
+    sslStatus: null,
     goto_: null,                  // target URL when after certerr encountered
     _certerrorCount: 0,           // certerr seems called more than once...
 
@@ -429,19 +418,20 @@ var sceChrome = {
       if (!(aState & (Ci.nsIWebProgressListener.STATE_IS_INSECURE
                       | Ci.nsIWebProgressListener.STATE_IS_BROKEN))) // restoring "broken" https
         return;
+
+      this.sslStatus = sceChrome.getSSLStatusFromRequest(aRequest);
+      if (!this.sslStatus) {    // mostly on restoring
+        scelog.info("no SSLStatus");
+        return;
+      }
+      scelog.debug("this.sslStatus set: "+this.sslStatus);
+
       if (sce.Utils.prefService.getBoolPref('single_click_skip')) return;
       scelog.debug("single_click_skip false");
 
       this._certerrorCount = 0; // reset
 
-      let aSSLStatus = sceChrome.getSSLStatusFromBadCertsService(uri);
-      if (!aSSLStatus) {
-        scelog.debug("no SSLStatus");
-        return;
-      }
-
-      scelog.debug("aSSLStatus found: "+aSSLStatus);
-      var cert = aSSLStatus.serverCert;
+      var cert = this.sslStatus.serverCert;
       scelog.debug("cert found: "+cert);
 
       // check if cert already known/added
@@ -455,12 +445,12 @@ var sceChrome = {
       scelog.debug("*** domainBypass="+domainBypass);
 
       if (domainBypass) {
-        sceChrome.addCertException(aSSLStatus, uri);
+        sceChrome.addCertException(this.sslStatus, uri);
         sceChrome.notification.type = 'exceptionAddedKnownDomain';
         sceChrome.notification.bypassDomain = domainBypass;
 
       } else {
-        var certDiag = sceChrome.diagnoseInsecureRequest(aRequest);
+        var certDiag = sceChrome.diagnoseInsecureRequest(aRequest, this.sslStatus);
 
         // Add cert exception (if bypass allowed by options)
         if (certDiag.dontBypassFlags) {    // ALL conditions must be set
@@ -469,7 +459,7 @@ var sceChrome = {
           scelog.debug("dontBypassFlags=" + certDiag.dontBypassFlags + ", " + dontBypassTags);
           sceChrome.notification.bypassTag = dontBypassTags;
         } else if (certDiag.bypassFlags) {
-          sceChrome.addCertException(aSSLStatus, uri);
+          sceChrome.addCertException(this.sslStatus, uri);
           sceChrome.notification.type = 'exceptionAdded';
           var bypassTags = this._parseBadCertFlags(certDiag.bypassFlags);
           scelog.debug("bypassFlags=" + certDiag.bypassFlags + ", " + bypassTags);
@@ -505,10 +495,10 @@ var sceChrome = {
       let newButton = doc.createElement("button");
       newButton.id = "SkipCertErrorButton";
       newButton.innerHTML = sceChrome.strings.getString('skipError');
+      let that = this;
       newButton.addEventListener("click", function(event) {
         let uri = browser.currentURI;
-        let aSSLStatus = sceChrome.getSSLStatusFromBadCertsService(uri);
-        sceChrome.addCertException(aSSLStatus, uri);
+        sceChrome.addCertException(that.sslStatus, uri);
         browser.loadURI(uri.spec, null, null);
       }, false);
       exceptionDialogButton.parentNode.appendChild(newButton);
