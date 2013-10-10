@@ -10,7 +10,7 @@
 <!ENTITY bypass_domains.tooltip "Eén domein per regel (b.v. mozilla.org) - OVERGESLAGEN ZONDER CONTROLE!">
 <!ENTITY bypass_errors "Bypassfout wanneer certificaat:">
 <!ENTITY bool_bypass_issuer_not_trusted.label "afkomstig is van niet-vertrouwde uitgever">
-<!ENTITY bool_bypass_issuer_not_trusted.accesskey "U">
+<!ENTITY bool_bypass_issuer_not_trusted.accesskey "w">
 <!ENTITY bool_bypass_issuer_unknown.label "afkomstig is van onbekende uitgever">
 <!ENTITY bool_bypass_issuer_unknown.accesskey "k">
 <!ENTITY bool_bypass_self_signed.label "zelf ondertekend is">

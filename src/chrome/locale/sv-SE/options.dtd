@@ -6,8 +6,8 @@
 <!ENTITY bool_add_temporary_exceptions.accesskey "t">
 <!ENTITY bool_notify.label "Meddelanden">
 <!ENTITY bool_notify.accesskey "M">
-<!ENTITY bypass_domains.label "Domain whitelist:">
-<!ENTITY bypass_domains.tooltip "One domain by line (e.g.: .mozilla.org) — BYPASSED WITHOUT CHECKING !">
+<!ENTITY bypass_domains.label "Betrodda domäner:">
+<!ENTITY bypass_domains.tooltip "En domän per rad (t.ex.: .mozilla.org) — KRINGGÅS UTAN FÖREGÅENDE KONTROLL!">
 <!ENTITY bypass_errors "Kringgå fel när certifikat:">
 <!ENTITY bool_bypass_issuer_not_trusted.label "kommer från en icke betrodd utfärdare">
 <!ENTITY bool_bypass_issuer_not_trusted.accesskey "u">
