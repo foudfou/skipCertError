@@ -206,6 +206,7 @@ var sceChrome = {
     if (!request) return null;
     if ("undefined" === typeof(sslStatus) ||
         !sslStatus) {
+      log.debug("diagnoseInsecureRequest: sslStatus not provided");
       sslStatus = this.getSSLStatusFromRequest(request);
     }
 
@@ -413,11 +414,16 @@ var sceChrome = {
     onSecurityChange: function (aBrowser, aWebProgress, aRequest, aState) {
       var uri = aBrowser.currentURI;
       scelog.debug("onSecurityChange: uri=" + uri.prePath);
+      scelog.debug("aState: "+aState);
 
+      const wpl = Ci.nsIWebProgressListener;
+      let stateInsecure = aState & wpl.STATE_IS_INSECURE;
+      let stateBroken = aState & wpl.STATE_IS_BROKEN;
+      let stateInsecureMixedBlocked = aState &
+            (wpl.STATE_IS_INSECURE |
+             wpl.STATE_BLOCKED_MIXED_ACTIVE_CONTENT);
       if (!uri.schemeIs("https")) return;
-      if (!(aState & (Ci.nsIWebProgressListener.STATE_IS_INSECURE
-                      | Ci.nsIWebProgressListener.STATE_IS_BROKEN))) // restoring "broken" https
-        return;
+      if (!stateInsecure || !stateInsecureMixedBlocked) return;
 
       this.sslStatus = sceChrome.getSSLStatusFromRequest(aRequest);
       if (!this.sslStatus) {    // mostly on restoring
@@ -425,6 +431,7 @@ var sceChrome = {
         return;
       }
       scelog.debug("this.sslStatus set: "+this.sslStatus);
+      sceChrome.notification.host = uri.host;
 
       if (sce.Utils.prefService.getBoolPref('single_click_skip')) return;
       scelog.debug("single_click_skip false");
@@ -443,7 +450,6 @@ var sceChrome = {
 
       var domainBypass = sceChrome.isBypassDomain(uri.host);
       scelog.debug("*** domainBypass="+domainBypass);
-
       if (domainBypass) {
         sceChrome.addCertException(this.sslStatus, uri);
         sceChrome.notification.type = 'exceptionAddedKnownDomain';
