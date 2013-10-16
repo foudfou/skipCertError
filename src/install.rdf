@@ -38,6 +38,13 @@
 
     <em:localized>
       <Description>
+        <em:locale>hy-AM</em:locale>
+        <em:translator>EHrant Ohanyan,Best Regards®,2010 http://haysoft.org</em:translator>
+      </Description>
+    </em:localized>
+
+    <em:localized>
+      <Description>
         <em:locale>nl</em:locale>
         <em:translator>markh van BabelZilla.org</em:translator>
       </Description>
@@ -54,6 +61,7 @@
       <Description>
         <em:locale>sr</em:locale>
         <em:translator>ДакСРБИЈА (DakSrbija)</em:translator>
+        <em:description>Заобилази страницу са SSL/TLS грешкама.</em:description>
       </Description>
     </em:localized>
 
