@@ -3,21 +3,12 @@
 /* lifted from TCPSocket.js, NSS secerr.h and BrowserElementChildPreload.js.
  SEE ALSO: https://developer.mozilla.org/en-US/docs/How_to_check_the_security_state_of_an_XMLHTTPRequest_over_SSL */
 
-var EXPORTED_SYMBOLS = [ "sce", "SCE_ISSUER_NOT_TRUSTED", "SCE_ISSUER_UNKNOWN",
-  "SCE_CERT_SELF_SIGNED", "SCE_SSL_DOMAIN_MISMATCH", "SCE_SSL_NOT_VALID" ];
+var EXPORTED_SYMBOLS = [ "sce" ];
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 Components.utils.import("resource://sce/logging.jsm");
-
-/* SCE Constants */
-// custom const to keep track of cert errors inspired from nsIX509Cert.idl
-const SCE_ISSUER_NOT_TRUSTED   = 1 << 4;
-const SCE_ISSUER_UNKNOWN       = 1 << 5;
-const SCE_CERT_SELF_SIGNED     = 1 << 8;
-const SCE_SSL_DOMAIN_MISMATCH  = 1 << 9;
-const SCE_SSL_NOT_VALID        = 1 << 10;
 
 const SEC_ERROR_BASE = Ci.nsINSSErrorsService.NSS_SEC_ERROR_BASE;
 const SSL_ERROR_BASE = Ci.nsINSSErrorsService.NSS_SSL_ERROR_BASE;
@@ -30,6 +21,22 @@ if ("undefined" == typeof(sce)) {
 };
 
 sce.Sec = {
+  // custom const to keep track of cert errors inspired from nsIX509Cert.idl
+  VERIFIED_OK:                  0,
+  NOT_VERIFIED_UNKNOWN:         1 << 0,
+  CERT_REVOKED:                 1 << 1,
+  CERT_EXPIRED:                 1 << 2,
+  CERT_NOT_TRUSTED:             1 << 3,
+  ISSUER_NOT_TRUSTED:           1 << 4,
+  ISSUER_UNKNOWN:               1 << 5,
+  INVALID_CA:                   1 << 6,
+  USAGE_NOT_ALLOWED:            1 << 7,
+  SIGNATURE_ALGORITHM_DISABLED: 1 << 8,
+
+  CERT_SELF_SIGNED:             1 << 9,
+  SSL_DOMAIN_MISMATCH:          1 << 10,
+  SSL_NOT_VALID:                1 << 11,
+
   SEC_ERROR_EXPIRED_CERTIFICATE:               (SEC_ERROR_BASE + 11),
   SEC_ERROR_REVOKED_CERTIFICATE:               (SEC_ERROR_BASE + 12),
   SEC_ERROR_UNKNOWN_ISSUER:                    (SEC_ERROR_BASE + 13),

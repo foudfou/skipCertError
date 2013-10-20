@@ -145,7 +145,7 @@ $(build_dir)/$(chrome_source_root)/%.js: $(chrome_source_root)/%.js
     cp -f $< $@; \
   else \
     echo "Stripping debug calls from JS file $<"; \
-    sed '/scelog\.debug/d' $< > $@; \
+    sed '/sce_log\.debug/d' $< > $@; \
   fi
 
 $(build_dir)/$(modules_dir)/commons.js: $(modules_dir)/commons.js
