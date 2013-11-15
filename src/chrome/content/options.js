@@ -13,6 +13,8 @@ var sceUIOptions = {
     this.toggleDisable_All(sce.Utils.prefService.getBoolPref('enabled'));
     this.toggleCheck_BypassIssuerNotTrusted(
       document.getElementById('ui_bypass_self_signed').checked);
+
+    window.sizeToContent();
   },
 
   toggleDisable_All: function(enabledIsChecked) {
