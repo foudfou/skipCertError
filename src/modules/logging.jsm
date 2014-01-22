@@ -45,6 +45,7 @@ var colorTermLogColors = {
 if ("undefined" == typeof(sce)) {
   var sce = {};
 };
+var LogMod;
 
 // https://wiki.mozilla.org/Labs/JS_Modules#Logging
 sce.Logging = {
@@ -53,16 +54,21 @@ sce.Logging = {
   init: function() {
     if (this.initialized) return;
 
-    ["resource://services-common/log4moz.js", // FF
+    ["resource://gre/modules/Log.jsm",        // FF 27+
+     "resource://services-common/log4moz.js", // FF
      "resource:///modules/gloda/log4moz.js"]  // TB
       .forEach(function(file){
         try {Cu.import(file);} catch(x) {}
       }, this);
 
-    if ("undefined" == typeof(Log4Moz)) {
-      let errMsg = "log4moz.js not found";
+    if ("undefined" != typeof(Log)) {
+      LogMod = Log;
+    } else if ("undefined" != typeof(Log4Moz)) {
+      LogMod = Log4Moz;
+    } else {
+      let errMsg = "Log module not found";
       dump(errMsg+"\n");
-      Cu.ReportError(errMsg);
+      Cu.reportError(errMsg);
     };
 
     this.setupLogging("sce");
@@ -81,7 +87,7 @@ sce.Logging = {
         this.dateFormat = dateFormat;
     }
     SimpleFormatter.prototype = {
-      __proto__: Log4Moz.Formatter.prototype,
+      __proto__: LogMod.Formatter.prototype,
 
       _dateFormat: null,
 
@@ -135,26 +141,26 @@ sce.Logging = {
     };
 
     // Loggers are hierarchical, affiliation is handled by a '.' in the name.
-    this._logger = Log4Moz.repository.getLogger(loggerName);
+    this._logger = LogMod.repository.getLogger(loggerName);
     // Lowering this log level will affect all of our addon output
-    this._logger.level = Log4Moz.Level[SCE_LOG_LEVEL];
+    this._logger.level = LogMod.Level[SCE_LOG_LEVEL];
 
     // A console appender outputs to the JS Error Console
     let dateFormat = "%T";
     let simpleFormatter = new SimpleFormatter(dateFormat);
-    let capp = new Log4Moz.ConsoleAppender(simpleFormatter);
-    capp.level = Log4Moz.Level["Debug"];
+    let capp = new LogMod.ConsoleAppender(simpleFormatter);
+    capp.level = LogMod.Level["Debug"];
     this._logger.addAppender(capp);
 
     // A dump appender outputs to standard out
     let colorFormatter = new ColorTermFormatter(dateFormat);
-    let dapp = new Log4Moz.DumpAppender(colorFormatter);
-    dapp.level = Log4Moz.Level["Debug"];
+    let dapp = new LogMod.DumpAppender(colorFormatter);
+    dapp.level = LogMod.Level["Debug"];
     this._logger.addAppender(dapp);
   },
 
   getLogger: function(loggerName){
-    return Log4Moz.repository.getLogger(loggerName);
+    return LogMod.repository.getLogger(loggerName);
   }
 
 };                              // sce.Logging
