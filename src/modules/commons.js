@@ -20,6 +20,7 @@ if ("undefined" == typeof(sce)) {
   var sce = {};
 };
 
+let log = sce.Logging.getLogger("sce.commons");
 
 sce.Utils = {
 
@@ -31,20 +32,21 @@ sce.Utils = {
   },
 
   getObjPref: function(prefStr) {
+    log.debug(prefStr);
     try {
       var objPref = JSON.parse(
         sce.Utils.prefService.getCharPref(prefStr));
     } catch (x) {
-      sce.Debug.dump(x);
+      log.error(x);
     }
     return objPref;
   },
   setObjPref: function(prefStr, obj) {
-    sce.Debug.dumpObj(obj);
+    log.debug(obj);
     try {
       sce.Utils.prefService.setCharPref(prefStr, JSON.stringify(obj));
     } catch (x) {
-      sce.Debug.dump(x);
+      log.error(x);
     }
   },
 
