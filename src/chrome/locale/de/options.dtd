@@ -1,13 +1,13 @@
 <!ENTITY prefwindow.title "Skip Cert Error - Einstellungen">
 <!ENTITY pane1.title "Skip Cert Error - Einstellungen">
-<!ENTITY bool_enabled.label "Umgehungen aktivieren">
+<!ENTITY bool_enabled.label "Zertifikats-Fehlermeldungen umgehen">
 <!ENTITY bool_enabled.accesskey "U">
 <!ENTITY bool_add_temporary_exceptions.label "Ausnahmen nur temporär hinzufügen">
 <!ENTITY bool_add_temporary_exceptions.accesskey "t">
 <!ENTITY bool_notify.label "Benachrichtigungen">
 <!ENTITY bool_notify.accesskey "B">
-<!ENTITY bypass_domains.label "Domain Whitelist:">
-<!ENTITY bypass_domains.tooltip "Eine Domain pro Zeile (z.B.: .mozilla.org) — UMGEHUNG OHNE KONTROLLE !">
+<!ENTITY bypass_domains.label "Domain-Whitelist:">
+<!ENTITY bypass_domains.tooltip "Eine Domain pro Zeile (z.B.: .mozilla.org) — UMGEHUNG OHNE KONTROLLE!">
 <!ENTITY bypass_errors "Zertifikats-Fehlermeldungen umgehen, wenn:">
 <!ENTITY bool_bypass_issuer_not_trusted.label "der Aussteller nicht vertrauenswürdig ist">
 <!ENTITY bool_bypass_issuer_not_trusted.accesskey "n">
