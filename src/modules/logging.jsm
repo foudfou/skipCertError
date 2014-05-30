@@ -6,7 +6,7 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 const Cu = Components.utils;
 
-const SCE_LOG_LEVEL = "Warn"; // "All" for debugging
+const SCE_LOG_LEVEL = "All"; // "All" for debugging
 
 const COLOR_NORMAL          = "";
 const COLOR_RESET           = "\033[m";
@@ -83,61 +83,66 @@ sce.Logging = {
 
     // lifted from log4moz.js
     function SimpleFormatter(dateFormat) {
+      LogMod.Formatter.call(this);
       if (dateFormat)
         this.dateFormat = dateFormat;
     }
-    SimpleFormatter.prototype = {
-      __proto__: LogMod.Formatter.prototype,
+    SimpleFormatter.prototype = Object.create(LogMod.Formatter.prototype);
+    SimpleFormatter.prototype.constructor = SimpleFormatter;
 
-      _dateFormat: null,
+    SimpleFormatter.prototype._dateFormat = null;
 
-      get dateFormat() {
+    Object.defineProperty(SimpleFormatter, "dateFormat", {
+      get: function dateFormat() {
         if (!this._dateFormat)
           this._dateFormat = "%Y-%m-%d %H:%M:%S";
         return this._dateFormat;
       },
 
-      set dateFormat(format) {
+      set: function dateFormat(format) {
         this._dateFormat = format;
-      },
-
-      format: function(message) {
-        let messageString = "";
-        if (message.hasOwnProperty("message"))
-          messageString = message.message;
-        else
-          // The trick below prevents errors further down because mo is null or
-          //  undefined.
-          messageString = [
-            ("" + mo) for each
-                      ([,mo] in Iterator(message.messageObjects))].join(" ");
-
-        let date = new Date(message.time);
-        let stringLog = date.toLocaleFormat(this.dateFormat) + " " +
-          message.levelDesc + " " + message.loggerName + " " +
-          messageString + "\n";
-
-        if (message.exception)
-          stringLog += message.stackTrace + "\n";
-
-        return stringLog;
       }
+    });
+
+    Object.defineProperty(SimpleFormatter, "dateFormat", {
+    });
+
+    SimpleFormatter.prototype.format = function(message) {
+      let messageString = "";
+      if (message.hasOwnProperty("message"))
+        messageString = message.message;
+      else
+        // The trick below prevents errors further down because mo is null or
+        //  undefined.
+        messageString = [
+          ("" + mo) for each
+                    ([,mo] in Iterator(message.messageObjects))].join(" ");
+
+      let date = new Date(message.time);
+      let stringLog = date.toLocaleFormat(this.dateFormat) + " " +
+            message.levelDesc + " " + message.loggerName + " " +
+            messageString + "\n";
+
+      if (message.exception)
+        stringLog += message.stackTrace + "\n";
+
+      return stringLog;
     };
 
     function ColorTermFormatter(dateFormat) {
+      SimpleFormatter.call(this);
       if (dateFormat)
         this.dateFormat = dateFormat;
     }
-    ColorTermFormatter.prototype = {
-      __proto__: SimpleFormatter.prototype,
+    ColorTermFormatter.prototype = Object.create(SimpleFormatter.prototype);
+    ColorTermFormatter.prototype.constructor = ColorTermFormatter;
 
-      format: function(message) {
+    ColorTermFormatter.prototype.format = function(message) {
         let color = colorTermLogColors[message.levelDesc];
         let stringLog = SimpleFormatter.prototype.format.call(this, message);
         stringLog = color + stringLog + COLOR_RESET;
 
         return stringLog;
-      }
     };
 
     // Loggers are hierarchical, affiliation is handled by a '.' in the name.
