@@ -5,7 +5,7 @@
     <em:unpack>false</em:unpack>
     <em:type>2</em:type>
     <em:name>Skip Cert Error</em:name>
-    <em:version>0.4.1</em:version>
+    <em:version>0.4.2</em:version>
     <em:creator>Foudil BRÉTEL</em:creator>
     <em:description>Skip SSL/TLS certificate error page.</em:description>
     <em:homepageURL>https://github.com/foudfou/skipCertError</em:homepageURL>
@@ -17,7 +17,7 @@
       <Description>
         <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id> <!-- Firefox -->
         <em:minVersion>23.0</em:minVersion>
-        <em:maxVersion>30.0</em:maxVersion>
+        <em:maxVersion>34.0</em:maxVersion>
       </Description>
     </em:targetApplication>
 
