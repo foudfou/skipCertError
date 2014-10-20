@@ -42,7 +42,6 @@ var sceChrome = {
     this.initialized = null;
     this.strings = document.getElementById("sce-strings");
     this.overrideService = null;
-    this.recentCertsService = null;
     this.notification = {
       willNotify: false,
       browser: null,
@@ -59,11 +58,9 @@ var sceChrome = {
       sce.Utils.prefService.addObserver("", that, false);
 
       // Get cert services
-      // CAUTION: https://bugzilla.mozilla.org/show_bug.cgi?id=650858
       this.overrideService =
         Cc["@mozilla.org/security/certoverride;1"]
-        .getService(Components.interfaces.nsICertOverrideService);
-      this.recentCertsService = this._initBadCertService();
+        .getService(Ci.nsICertOverrideService);
     }
     catch (ex) {
       sce_log.error("SkipCertError: " + ex);
@@ -123,13 +120,6 @@ var sceChrome = {
     }
   },
 
-  _initBadCertService: function() {
-    let isPrivate = false;
-    return Cc["@mozilla.org/security/x509certdb;1"]
-      .getService(Ci.nsIX509CertDB)
-      .getRecentBadCerts(isPrivate);
-  },
-
   getCertException: function(uri, cert) {
     var outFlags = {};
     var outTempException = {};
@@ -187,7 +177,7 @@ var sceChrome = {
 
   isSelfSignedFromSSLStatus: function(status) {
     var cert = status.serverCert;
-    cert.QueryInterface(Ci.nsIX509Cert3);
+    cert.QueryInterface(SCE_X509CertInterface);
     var isSelfSigned = cert.isSelfSigned;
     sce_log.debug("isSelfSigned:" + isSelfSigned);
 
@@ -327,6 +317,7 @@ var sceChrome = {
   },
 
   notify: function(abrowser) {
+    sce_log.debug("notify");
     let that = this;
 
     // find the correct tab to display notification on
@@ -380,8 +371,9 @@ var sceChrome = {
     // close notificatioBox if needed (will close automatically if reload)
     var exceptionDialogButton = abrowser.webProgress.DOMWindow
       .document.getElementById('exceptionDialogButton');
-    exceptionDialogButton.addEventListener(
-      "click", function(e){that.exceptionDialogButtonOnClick();}, false);
+    if (exceptionDialogButton)
+      exceptionDialogButton.addEventListener(
+        "click", function(e){that.exceptionDialogButtonOnClick();}, false);
 
     this.notification = {}; // reset
   },
@@ -545,9 +537,10 @@ var sceChrome = {
 
         } // END function onCertVerificationComplete
 
-        if (cert instanceof Ci.nsIX509Cert3) {
+        if (cert instanceof SCE_X509CertInterface)
           cert.requestUsagesArrayAsync({notify: onCertVerificationComplete});
-        }
+        else
+          sce_log.warn("SkipCertError: Not instanceof SCE_X509CertInterface ?");
       }
 
       // trigger notification

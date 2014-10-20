@@ -6,10 +6,13 @@
  * http://developer.mozilla.org/en/XUL_School/JavaScript_Object_Management.html
  */
 
-var EXPORTED_SYMBOLS = [ "sce" ];
+var EXPORTED_SYMBOLS = [ "sce", "SCE_X509CertInterface" ];
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
+
+// FIXME: SCE_COMPAT_nsIX509Cert ?
+const SCE_X509CertInterface = ("nsIX509Cert3" in Ci) ? Ci.nsIX509Cert3 : Ci.nsIX509Cert;
 
 Components.utils.import("resource://sce/logging.jsm");
 
