@@ -175,6 +175,17 @@ var sceChrome = {
     return null;
   },
 
+  getRemoteIpFromRequest: function(request) {
+    if (request instanceof Ci.nsIChannel &&
+        request instanceof Ci.nsIHttpChannel &&
+        request instanceof Ci.nsIHttpChannelInternal) {
+      let ip = request.remoteAddress;
+      sce_log.debug("ip="+ip);
+      if (ip) return ip;
+    }
+    return null;
+  },
+
   isSelfSignedFromSSLStatus: function(status) {
     var cert = status.serverCert;
     cert.QueryInterface(SCE_X509CertInterface);
@@ -305,13 +316,16 @@ var sceChrome = {
     return diag;
   },
 
-  isBypassDomain: function(host) {
+  isBypassDomain: function(host, ip) {
     var bypassDomains = sce.Utils.getArrayPref('bypass_domains');
     sce_log.debug("*** bypassDomains:"+bypassDomains);
     for (let i=0, len=bypassDomains.length; i<len; ++i) {
       let domain = bypassDomains[i];
-      let re = new RegExp(domain.replace(/\./g, "\\.")+"$");
-      if (re.test(host)) return domain;
+      let re_domain = new RegExp(domain.replace(/\./g, "\\.")+"$");
+      if (re_domain.test(host)) return domain;
+      let re_ip = new RegExp("^"+domain.replace(/\./g, "\\."));
+      sce_log.debug("    ip="+ip+" re_ip="+re_ip+" "+re_ip.test(ip));
+      if (re_ip.test(ip)) return domain;
     }
     return null;
   },
@@ -478,7 +492,8 @@ var sceChrome = {
         return;
       }
 
-      var domainBypass = sceChrome.isBypassDomain(uri.host);
+      let ip = sceChrome.getRemoteIpFromRequest(aRequest);
+      var domainBypass = sceChrome.isBypassDomain(uri.host, ip);
       sce_log.debug("*** domainBypass="+domainBypass);
       if (domainBypass) {
         sceChrome.addCertException(this.sslStatus, uri);
