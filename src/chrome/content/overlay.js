@@ -164,7 +164,7 @@ var sceChrome = {
   },
 
   getSSLStatusFromRequest: function(request) {
-    let sslstatus = null;
+    let sslStatus = null;
     if (request instanceof Ci.nsIChannel) {
       request.QueryInterface(Ci.nsIChannel);
       let secInfo = request.securityInfo;
