@@ -7,7 +7,7 @@
 <!ENTITY bool_notify.label "Notificações">
 <!ENTITY bool_notify.accesskey "N">
 <!ENTITY bypass_domains.label "Lista branca de domínios:">
-<!ENTITY bypass_domains.tooltip "Um domínio por linha (exemplo: .mozilla.org) — IGNORADO SEM VERIFICAÇÃO !">
+<!ENTITY bypass_domains.tooltip "Um domínio por linha (exemplo: .mozilla.org, 192.168.) — IGNORADO SEM VERIFICAÇÃO !">
 <!ENTITY bypass_errors "Ignorar erros quando o certificado:">
 <!ENTITY bool_bypass_issuer_not_trusted.label "é de um emissor não confiável">
 <!ENTITY bool_bypass_issuer_not_trusted.accesskey "n">

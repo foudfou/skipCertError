@@ -10,8 +10,9 @@ const Ci = Components.interfaces;
 
 Components.utils.import("resource://sce/logging.jsm");
 
-const SEC_ERROR_BASE = Ci.nsINSSErrorsService.NSS_SEC_ERROR_BASE;
-const SSL_ERROR_BASE = Ci.nsINSSErrorsService.NSS_SSL_ERROR_BASE;
+const SEC_ERROR_BASE  = Ci.nsINSSErrorsService.NSS_SEC_ERROR_BASE;
+const SSL_ERROR_BASE  = Ci.nsINSSErrorsService.NSS_SSL_ERROR_BASE;
+const PKIX_ERROR_BASE = Ci.nsINSSErrorsService.MOZILLA_PKIX_ERROR_BASE;
 
 /**
  * sce namespace.
@@ -37,6 +38,11 @@ sce.Sec = {
   SSL_DOMAIN_MISMATCH:          1 << 10,
   SSL_NOT_VALID:                1 << 11,
 
+  /* connection diagnosed insecure by FF, but considered ok by users "some
+   security is better than none". see
+   https://bugzilla.mozilla.org/show_bug.cgi?id=1084606 */
+  INVALID_KEY:                  1 << 12,
+
   SEC_ERROR_EXPIRED_CERTIFICATE:               (SEC_ERROR_BASE + 11),
   SEC_ERROR_REVOKED_CERTIFICATE:               (SEC_ERROR_BASE + 12),
   SEC_ERROR_UNKNOWN_ISSUER:                    (SEC_ERROR_BASE + 13),
@@ -44,14 +50,19 @@ sce.Sec = {
   SEC_ERROR_UNTRUSTED_CERT:                    (SEC_ERROR_BASE + 21),
   SEC_ERROR_EXPIRED_ISSUER_CERTIFICATE:        (SEC_ERROR_BASE + 30),
   SEC_ERROR_CA_CERT_INVALID:                   (SEC_ERROR_BASE + 36),
+  SEC_ERROR_INVALID_KEY:                       (SEC_ERROR_BASE + 40),
   SEC_ERROR_INADEQUATE_KEY_USAGE:              (SEC_ERROR_BASE + 90),
   SEC_ERROR_CERT_SIGNATURE_ALGORITHM_DISABLED: (SEC_ERROR_BASE + 176),
 
+  // see security/nss/lib/ssl/SSLerrs.h
+  SSL_ERROR_NO_CYPHER_OVERLAP:            (SSL_ERROR_BASE + 2),
   SSL_ERROR_NO_CERTIFICATE:               (SSL_ERROR_BASE + 3),
   SSL_ERROR_BAD_CERTIFICATE:              (SSL_ERROR_BASE + 4),
   SSL_ERROR_UNSUPPORTED_CERTIFICATE_TYPE: (SSL_ERROR_BASE + 8),
   SSL_ERROR_UNSUPPORTED_VERSION:          (SSL_ERROR_BASE + 9),
   SSL_ERROR_BAD_CERT_DOMAIN:              (SSL_ERROR_BASE + 12),
+
+  PKIX_ERROR_INADEQUATE_KEY_SIZE: (PKIX_ERROR_BASE + 2),
 
   NS_ERROR_MODULE_BASE_OFFSET: 0x45,
   NS_ERROR_MODULE_SECURITY: 21,

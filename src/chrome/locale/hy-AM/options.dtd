@@ -7,7 +7,7 @@
 <!ENTITY bool_notify.label "Տեղեկացումներ">
 <!ENTITY bool_notify.accesskey "N">
 <!ENTITY bypass_domains.label "Տիրույթի սպիտակ ցուցակը.">
-<!ENTITY bypass_domains.tooltip "Մեկ տիրույթ ամեն տողում (օր.՝ .mozilla.org) — ԿՇՐՋԱՆՑՎԻ ԱՌԱՆՑ ՍՏՈՒԳԵԼՈՒ:">
+<!ENTITY bypass_domains.tooltip "Մեկ տիրույթ ամեն տողում (օր.՝ .mozilla.org, 192.168.) — ԿՇՐՋԱՆՑՎԻ ԱՌԱՆՑ ՍՏՈՒԳԵԼՈՒ:">
 <!ENTITY bypass_errors "Շրջանցել սխալը, երբ cert-ը՝">
 <!ENTITY bool_bypass_issuer_not_trusted.label "անվստահելի հարցնողից է">
 <!ENTITY bool_bypass_issuer_not_trusted.accesskey "U">

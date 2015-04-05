@@ -7,7 +7,7 @@
 <!ENTITY bool_notify.label "Berichten">
 <!ENTITY bool_notify.accesskey "B">
 <!ENTITY bypass_domains.label "Witte lijst domeinen:">
-<!ENTITY bypass_domains.tooltip "Eén domein per regel (b.v. mozilla.org) - OVERGESLAGEN ZONDER CONTROLE!">
+<!ENTITY bypass_domains.tooltip "Eén domein per regel (b.v. mozilla.org, 192.168.) - OVERGESLAGEN ZONDER CONTROLE!">
 <!ENTITY bypass_errors "Bypassfout wanneer certificaat:">
 <!ENTITY bool_bypass_issuer_not_trusted.label "afkomstig is van niet-vertrouwde uitgever">
 <!ENTITY bool_bypass_issuer_not_trusted.accesskey "w">

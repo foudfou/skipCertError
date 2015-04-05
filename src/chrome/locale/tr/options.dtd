@@ -7,7 +7,7 @@
 <!ENTITY bool_notify.label "Uyarılar">
 <!ENTITY bool_notify.accesskey "U">
 <!ENTITY bypass_domains.label "Onaylı Alanadı Listesi:">
-<!ENTITY bypass_domains.tooltip "Her satıra bir alanadı (ör.: .mozilla.org) - denetlenmeden atlanır!">
+<!ENTITY bypass_domains.tooltip "Her satıra bir alanadı (ör.: .mozilla.org, 192.168.) - denetlenmeden atlanır!">
 <!ENTITY bypass_errors "Sertifika şu durumdaysa hatayı atla:">
 <!ENTITY bool_bypass_issuer_not_trusted.label "yayınlayıcı güvenilmezse">
 <!ENTITY bool_bypass_issuer_not_trusted.accesskey "G">

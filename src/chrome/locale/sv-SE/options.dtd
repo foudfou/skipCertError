@@ -7,7 +7,7 @@
 <!ENTITY bool_notify.label "Meddelanden">
 <!ENTITY bool_notify.accesskey "M">
 <!ENTITY bypass_domains.label "Betrodda domäner:">
-<!ENTITY bypass_domains.tooltip "En domän per rad (t.ex.: .mozilla.org) — KRINGGÅS UTAN FÖREGÅENDE KONTROLL!">
+<!ENTITY bypass_domains.tooltip "En domän per rad (t.ex.: .mozilla.org, 192.168.) — KRINGGÅS UTAN FÖREGÅENDE KONTROLL!">
 <!ENTITY bypass_errors "Kringgå fel när certifikat:">
 <!ENTITY bool_bypass_issuer_not_trusted.label "kommer från en icke betrodd utfärdare">
 <!ENTITY bool_bypass_issuer_not_trusted.accesskey "u">

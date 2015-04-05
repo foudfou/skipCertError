@@ -7,7 +7,7 @@
 <!ENTITY bool_notify.label "提醒">
 <!ENTITY bool_notify.accesskey "N">
 <!ENTITY bypass_domains.label "域名白名单：">
-<!ENTITY bypass_domains.tooltip "每行一个域(例如：.mozilla.org) — 它们将不经检查跳过！">
+<!ENTITY bypass_domains.tooltip "每行一个域(例如：.mozilla.org, 192.168.) — 它们将不经检查跳过！">
 <!ENTITY bypass_errors "跳过错误，如果证书：">
 <!ENTITY bool_bypass_issuer_not_trusted.label "来自不受信任的发行者">
 <!ENTITY bool_bypass_issuer_not_trusted.accesskey "U">

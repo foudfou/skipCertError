@@ -145,11 +145,11 @@ var sceChrome = {
       SSLStatus.serverCert,
       flags,
       sce.Utils.prefService.getBoolPref('add_temporary_exceptions'));
-    sce_log.debug("CertEx added");
+    sce_log.info("CertEx added");
     this.TabsProgressListener.certExceptionJustAdded = true;
     sce_log.debug("certEx changed: " + this.TabsProgressListener.certExceptionJustAdded);
 
-    this.TabsProgressListener.goto_ = uri.spec;    // never reset
+    this.TabsProgressListener._goto = uri.spec;    // never reset
   },
 
   updateDiagWithFlagFromPref: function(diag, flag, prefName) {
@@ -164,14 +164,16 @@ var sceChrome = {
   },
 
   getSSLStatusFromRequest: function(request) {
+    let sslstatus = null;
     if (request instanceof Ci.nsIChannel) {
       request.QueryInterface(Ci.nsIChannel);
       let secInfo = request.securityInfo;
       if (secInfo instanceof Ci.nsISSLStatusProvider) {
-        return secInfo.QueryInterface(Ci.nsISSLStatusProvider)
-          .SSLStatus.QueryInterface(Ci.nsISSLStatus);
+        sslStatus = secInfo.QueryInterface(Ci.nsISSLStatusProvider).SSLStatus;
+        if (sslStatus) return sslStatus.QueryInterface(Ci.nsISSLStatus);
       }
     }
+
     return null;
   },
 
@@ -228,16 +230,8 @@ var sceChrome = {
     return diag;
   },
 
-  diagnoseInsecureRequest: function(diag, request, sslStatus) {
-    if (!request) return null;
-    if ("undefined" === typeof(sslStatus) ||
-        !sslStatus) {
-      sce_log.debug("diagnoseInsecureRequest: sslStatus not provided");
-      sslStatus = this.getSSLStatusFromRequest(request);
-    }
-
+  diagnoseInsecureRequest: function(diag, request) {
     let status = request.status;
-    sce_log.debug("sslStatus="+sslStatus+", status="+status);
 
     let nsModule = sce.Sec.NS_ERROR_GET_MODULE(status);
     sce_log.debug("nsModule="+nsModule);
@@ -248,6 +242,8 @@ var sceChrome = {
       sce_log.debug("SEC Code="+code);
       code = err - Ci.nsINSSErrorsService.NSS_SSL_ERROR_BASE;
       sce_log.debug("SSL Code="+code);
+      code = err - Ci.nsINSSErrorsService.MOZILLA_PKIX_ERROR_BASE;
+      sce_log.debug("PKIX Code="+code);
 
       switch (err) {
       // implied by self-signed, ex: https://linuxfr.org
@@ -279,15 +275,18 @@ var sceChrome = {
       case sce.Sec.SEC_ERROR_EXPIRED_ISSUER_CERTIFICATE:
       case sce.Sec.SEC_ERROR_INADEQUATE_KEY_USAGE:
       case sce.Sec.SEC_ERROR_CERT_SIGNATURE_ALGORITHM_DISABLED:
+      case sce.Sec.SEC_ERROR_INVALID_KEY:
+      case sce.Sec.SSL_ERROR_NO_CYPHER_OVERLAP:
       case sce.Sec.SSL_ERROR_NO_CERTIFICATE:
       case sce.Sec.SSL_ERROR_BAD_CERTIFICATE:
       case sce.Sec.SSL_ERROR_UNSUPPORTED_CERTIFICATE_TYPE:
       case sce.Sec.SSL_ERROR_UNSUPPORTED_VERSION:
+      case sce.Sec.PKIX_ERROR_INADEQUATE_KEY_SIZE:
         sce_log.warn("Unhandeled err("+err+")");
         break;
 
       default:                  // ignore
-        sce_log.error("SkipCertError: unknown cert verification: " + verificationResult);
+        sce_log.debug("SkipCertError: unknown err: " + err);
         break;
       }
 
@@ -295,10 +294,21 @@ var sceChrome = {
       sce_log.debug("Not for security module");
     }
 
+    return diag;
+  },
+
+  diagnoseSSLStatus: function(diag, request, sslStatus) {
+    if (!request) return null;
+    if ("undefined" === typeof(sslStatus) ||
+        !sslStatus) {
+      sce_log.debug("diagnoseSSLStatus: sslStatus not provided");
+      sslStatus = this.getSSLStatusFromRequest(request);
+    }
+
     let isSelfSigned = this.isSelfSignedFromSSLStatus(sslStatus);
     if (isSelfSigned) {       // ex: https://www.pcwebshop.co.uk/
       this.updateDiagWithFlagFromPref(diag, sce.Sec.CERT_SELF_SIGNED,
-                                 "bypass_self_signed");
+                                      "bypass_self_signed");
     }
     if(sslStatus.isUntrusted) {
       sce_log.debug("sslStatus.isUntrusted");
@@ -306,7 +316,7 @@ var sceChrome = {
     }
     if(sslStatus.isDomainMismatch) { // ex: https://amazon.com/
       this.updateDiagWithFlagFromPref(diag, sce.Sec.SSL_DOMAIN_MISMATCH,
-                                 "bypass_domain_mismatch");
+                                      "bypass_domain_mismatch");
     }
     if(sslStatus.isNotValidAtThisTime) {
       sce_log.debug("sslStatus.isNotValidAtThisTime");
@@ -429,6 +439,29 @@ var sceChrome = {
     return tag;
   },
 
+  buildNotification: function(diag, uri, sslStatus) {
+    // Add cert exception (if bypass allowed by options)
+    if (diag.unsupportedFlags) {
+      sceChrome.notification.type = 'exceptionUnsupported';
+      var ignoreTags = sceChrome.parseBadCertFlags(diag.unsupportedFlags);
+      sce_log.debug("unsupportedFlags=" + diag.unsupportedFlags + ", " + ignoreTags);
+      sceChrome.notification.bypassTag = ignoreTags;
+    } else if (diag.dontBypassFlags) {    // ALL conditions must be set
+      sceChrome.notification.type = 'exceptionNotAdded';
+      var dontBypassTags = sceChrome.parseBadCertFlags(diag.dontBypassFlags);
+      sce_log.debug("dontBypassFlags=" + diag.dontBypassFlags + ", " + dontBypassTags);
+      sceChrome.notification.bypassTag = dontBypassTags;
+    } else if (diag.bypassFlags) {
+      if (sslStatus) sceChrome.addCertException(sslStatus, uri);
+      sceChrome.notification.type = 'exceptionAdded';
+      var bypassTags = sceChrome.parseBadCertFlags(diag.bypassFlags);
+      sce_log.debug("bypassFlags=" + diag.bypassFlags + ", " + bypassTags);
+      sceChrome.notification.bypassTag = bypassTags;
+    } else {
+      // noop
+    }
+  },
+
   // a TabsProgressListener seems more appropriate than an Observer, which only
   // gets notified for document requests (not internal requests)
   TabsProgressListener: {
@@ -436,11 +469,12 @@ var sceChrome = {
 
     // used for communication btw onSecurityChange, onStateChange, ...
     certExceptionJustAdded: null,
-    sslStatus: null,
-    goto_: null,                  // target URL when after certerr encountered
+    _sslStatus: null,
+    _goto: null,                  // target URL when after certerr encountered
     _certerrorCount: 0,           // certerr seems called more than once...
 
-    /* This method will be called on security transitions (eg HTTP -> HTTPS,
+    /*
+     * This method will be called on security transitions (eg HTTP -> HTTPS,
      * HTTPS -> HTTP, FOO -> HTTPS) and *after document load* completion. It
      * might also be called if an error occurs during network loading.
      *
@@ -452,7 +486,6 @@ var sceChrome = {
       var uri = aBrowser.currentURI;
       sce_log.debug("onSecurityChange: uri=" + uri.prePath);
       sce_log.debug("aState: "+aState);
-
 
       if (!uri.schemeIs("https")) {
         sce_log.debug("uri not https");
@@ -469,39 +502,53 @@ var sceChrome = {
         return;
       }
 
-      this.sslStatus = sceChrome.getSSLStatusFromRequest(aRequest);
-      if (!this.sslStatus) {    // mostly on restoring
-        sce_log.debug("no SSLStatus");
+      if ("undefined" === typeof(aRequest) || !aRequest) {
+        sce_log.debug("onSecurityChange: request not provided");
         return;
       }
-      sce_log.debug("this.sslStatus set: "+this.sslStatus);
+
       sceChrome.notification.host = uri.host;
+
+      this._certerrorCount = 0; // reset
+
+      /* SSLStatus is mainly needed for the cert, otherwise we'd have to get it
+       with an XHR, and possibly use certdb.verifyCertNow(). See example in
+       test_bug544442_checkCert.xul.  We also need to store it for
+       onStateChange(). */
+      this._sslStatus = sceChrome.getSSLStatusFromRequest(aRequest);
+      // mostly on restoring or if neterror which is *not* overridable by
+      // nsICertOverrideService !
+      if (!this._sslStatus) {
+        sce_log.info("no sslStatus");
+        return;
+      }
+      sce_log.debug("sslStatus="+this._sslStatus);
 
       if (sce.Utils.prefService.getBoolPref('single_click_skip')) return;
       sce_log.debug("single_click_skip false");
 
-      this._certerrorCount = 0; // reset
-
-      var cert = this.sslStatus.serverCert;
-      sce_log.debug("cert found: "+cert);
-
-      // check if cert already known/added
-      var knownCert = sceChrome.getCertException(uri, cert);
-      if (knownCert) {
-        sce_log.debug("known cert: " + knownCert);
-        return;
-      }
-
-      let ip = sceChrome.getRemoteIpFromRequest(aRequest);
+      try {
+        var ip = sceChrome.getRemoteIpFromRequest(aRequest);
+      } catch(e) {}             // on restore
       var domainBypass = sceChrome.isBypassDomain(uri.host, ip);
       sce_log.debug("*** domainBypass="+domainBypass);
       if (domainBypass) {
-        sceChrome.addCertException(this.sslStatus, uri);
+        sceChrome.addCertException(this._sslStatus, uri);
         sceChrome.notification.type = 'exceptionAddedKnownDomain';
         sceChrome.notification.bypassDomain = domainBypass;
 
       } else {
+        var cert = this._sslStatus.serverCert;
+        sce_log.debug("cert found: "+cert);
 
+        // check if cert already known/added
+        var knownCert = sceChrome.getCertException(uri, cert);
+        if (knownCert) {
+          sce_log.debug("known cert: " + knownCert);
+          return;
+        }
+
+        let that = this;
         function onCertVerificationComplete(cert, result) {
           if (!result || !cert) return;
           if (!(cert instanceof Ci.nsIX509Cert)) return;
@@ -514,48 +561,29 @@ var sceChrome = {
           sce_log.debug("count="+count.value);
           sce_log.debug("usageList="+usageList.value);
 
-          /* For now, we'll make it simple: if *all* encountered conditions are set
-           to bypass (see options), then we bypass. If some aren't set, we don't
-           bypass and notify. For all other errors, we don't bypass, and notify "error
-           not handled by SkipCertError". */
-          let certDiag = {
+          /* For now, we'll make it simple: if *all* encountered conditions are
+           set to bypass (see options), then we bypass. If some aren't set, we
+           don't bypass and notify. For all other errors, we don't bypass, and
+           notify "error not handled by SkipCertError". */
+          let diag = {
             bypassFlags: 0,
             // we record when bypass conditions encountered but not set in options
             dontBypassFlags: 0,
             unsupportedFlags: 0
           };
+          diag = sceChrome.diagnoseInsecureRequest(diag, aRequest);
+          diag = sceChrome.diagnoseCert(diag, verifystate.value);
+          diag = sceChrome.diagnoseSSLStatus(diag, aRequest, that._sslStatus);
+          sce_log.debug("bypassFlags="+diag.bypassFlags+", dontBypassFlags="+diag.dontBypassFlags+", unsupportedFlags="+diag.unsupportedFlags);
 
-          certDiag = sceChrome.diagnoseCert(certDiag, verifystate.value);
-          certDiag = sceChrome.diagnoseInsecureRequest(certDiag, aRequest, sceChrome.TabsProgressListener.sslStatus);
-          sce_log.debug("bypassFlags="+certDiag.bypassFlags+", dontBypassFlags="+certDiag.dontBypassFlags+", unsupportedFlags="+certDiag.unsupportedFlags);
-
-          // Add cert exception (if bypass allowed by options)
-          if (certDiag.unsupportedFlags) {
-            sceChrome.notification.type = 'exceptionUnsupported';
-            var ignoreTags = sceChrome.parseBadCertFlags(certDiag.unsupportedFlags);
-            sce_log.debug("unsupportedFlags=" + certDiag.unsupportedFlags + ", " + ignoreTags);
-            sceChrome.notification.bypassTag = ignoreTags;
-          } else if (certDiag.dontBypassFlags) {    // ALL conditions must be set
-            sceChrome.notification.type = 'exceptionNotAdded';
-            var dontBypassTags = sceChrome.parseBadCertFlags(certDiag.dontBypassFlags);
-            sce_log.debug("dontBypassFlags=" + certDiag.dontBypassFlags + ", " + dontBypassTags);
-            sceChrome.notification.bypassTag = dontBypassTags;
-          } else if (certDiag.bypassFlags) {
-            sceChrome.addCertException(sceChrome.TabsProgressListener.sslStatus, uri);
-            sceChrome.notification.type = 'exceptionAdded';
-            var bypassTags = sceChrome.parseBadCertFlags(certDiag.bypassFlags);
-            sce_log.debug("bypassFlags=" + certDiag.bypassFlags + ", " + bypassTags);
-            sceChrome.notification.bypassTag = bypassTags;
-          } else {
-            // noop
-          }
-
+          sceChrome.buildNotification(diag, uri, that._sslStatus);
         } // END function onCertVerificationComplete
 
         if (cert instanceof SCE_X509CertInterface)
           cert.requestUsagesArrayAsync({notify: onCertVerificationComplete});
         else
           sce_log.warn("SkipCertError: Not instanceof SCE_X509CertInterface ?");
+
       }
 
       // trigger notification
@@ -582,13 +610,13 @@ var sceChrome = {
       let newButton = doc.createElement("button");
       newButton.id = "SkipCertErrorButton";
       newButton.textContent = sceChrome.strings.getString('skipError');
-      let that = this;
       newButton.addEventListener("click", function(event) {
         let uri = browser.currentURI;
-        sceChrome.addCertException(that.sslStatus, uri);
+        sceChrome.addCertException(sceChrome.TabsProgressListener._sslStatus, uri);
         browser.loadURI(uri.spec, null, null);
       }, false);
       exceptionDialogButton.parentNode.appendChild(newButton);
+      sce_log.debug("newButton installed");
     },
 
     /*
@@ -608,11 +636,11 @@ var sceChrome = {
         // aWebProgress.DOMWindow is the tab/window which triggered the change.
         var originDoc = aWebProgress.DOMWindow.document;
         var originURI = originDoc.documentURI;
-        sce_log.debug("originURI="+originURI);
+        sce_log.debug("onStateChange originURI="+originURI);
 
         if (/^about:certerr/.test(originURI)) {
           this._certerrorCount++;
-          sce_log.debug("certerrorCount=" + this._certerrorCount);
+          sce_log.debug("certerrorCount=" + this._certerrorCount + " < _MAX="+SCE_CERTERROR_COUNT_MAX);
 
           if (this._certerrorCount < SCE_CERTERROR_COUNT_MAX) {
             if (aStateFlags & (Ci.nsIWebProgressListener.STATE_STOP
@@ -635,16 +663,15 @@ var sceChrome = {
           if (this.certExceptionJustAdded) {
             this.certExceptionJustAdded = false; // reset
             aRequest.cancel(Components.results.NS_BINDING_ABORTED);
-            aBrowser.loadURI(this.goto_, null, null);
+            aBrowser.loadURI(this._goto, null, null);
           }
-
         } // END /^about:certerr/
 
       } // END STATE_STOP|STATE_IS_REQUEST
     }, // END onStateChange
 
     onLocationChange: function(aBrowser, aWebProgress, aRequest, aLocation, aFlags) {
-      sce_log.debug("_notifyMaybe: willNotify="+sceChrome.notification.willNotify);
+      sce_log.debug("onLocationChange: willNotify="+sceChrome.notification.willNotify);
       if (sceChrome.notification.willNotify && aBrowser === sceChrome.notification.browser) {
         sceChrome.notification.willNotify = false; // reset
         sceChrome.notification.browser = null;     // reset

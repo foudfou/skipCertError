@@ -7,7 +7,7 @@
 <!ENTITY bool_notify.label "Notifications">
 <!ENTITY bool_notify.accesskey "N">
 <!ENTITY bypass_domains.label "Liste blanche de domaines:">
-<!ENTITY bypass_domains.tooltip "Un domaine par ligne (e.g. .mozilla.org) — OUTREPASSÉS SANS VÉRIFICATION !">
+<!ENTITY bypass_domains.tooltip "Un domaine par ligne (e.g..mozilla.org, 192.168.) — OUTREPASSÉS SANS VÉRIFICATION !">
 <!ENTITY bypass_errors "Outrepasser si le certificat:">
 <!ENTITY bool_bypass_issuer_not_trusted.label "est d'émetteur non-fiable">
 <!ENTITY bool_bypass_issuer_not_trusted.accesskey "U">

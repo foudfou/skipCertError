@@ -7,7 +7,7 @@
 <!ENTITY bool_notify.label "Обавештења">
 <!ENTITY bool_notify.accesskey "О">
 <!ENTITY bypass_domains.label "Проверени домени:">
-<!ENTITY bypass_domains.tooltip "Један домен по линији (нпр. .mozilla.org — ЗАОБИЛАЖЕЊЕ БЕЗ ПРОВЕРАВАЊА)">
+<!ENTITY bypass_domains.tooltip "Један домен по линији (нпр. .mozilla.org, 192.168.) — ЗАОБИЛАЖЕЊЕ БЕЗ ПРОВЕРАВАЊА">
 <!ENTITY bypass_errors "Заобиђигрешку када сертификат:">
 <!ENTITY bool_bypass_issuer_not_trusted.label "издаје непоуздан издавач">
 <!ENTITY bool_bypass_issuer_not_trusted.accesskey "п">

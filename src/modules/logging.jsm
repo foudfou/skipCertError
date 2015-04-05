@@ -6,6 +6,8 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 const Cu = Components.utils;
 
+Cu.import("resource://gre/modules/Services.jsm");
+
 const SCE_LOG_LEVEL = "Warn"; // "All" for debugging
 
 const COLOR_NORMAL          = "";
@@ -45,26 +47,26 @@ var colorTermLogColors = {
 if ("undefined" == typeof(sce)) {
   var sce = {};
 };
-var LogMod;
 
 // https://wiki.mozilla.org/Labs/JS_Modules#Logging
 sce.Logging = {
   initialized: false,
+  LogMod: null,
 
   init: function() {
     if (this.initialized) return;
 
-    ["resource://gre/modules/Log.jsm",        // FF 27+
-     "resource://services-common/log4moz.js", // FF
-     "resource:///modules/gloda/log4moz.js"]  // TB
+    ["resource://gre/modules/Log.jsm",           // FF 27+
+     "resource://services-common/log4moz.js",    // FF
+     "resource:///app/modules/gloda/log4moz.js"] // TB
       .forEach(function(file){
         try {Cu.import(file);} catch(x) {}
       }, this);
 
     if ("undefined" != typeof(Log)) {
-      LogMod = Log;
+      this.LogMod = Log;
     } else if ("undefined" != typeof(Log4Moz)) {
-      LogMod = Log4Moz;
+      this.LogMod = Log4Moz;
     } else {
       let errMsg = "Log module not found";
       dump(errMsg+"\n");
@@ -82,31 +84,9 @@ sce.Logging = {
   setupLogging: function(loggerName) {
 
     // lifted from log4moz.js
-    function SimpleFormatter(dateFormat) {
-      LogMod.Formatter.call(this);
-      if (dateFormat)
-        this.dateFormat = dateFormat;
-    }
-    SimpleFormatter.prototype = Object.create(LogMod.Formatter.prototype);
+    function SimpleFormatter() {sce.Logging.LogMod.Formatter.call(this);}
+    SimpleFormatter.prototype = Object.create(sce.Logging.LogMod.Formatter.prototype);
     SimpleFormatter.prototype.constructor = SimpleFormatter;
-
-    SimpleFormatter.prototype._dateFormat = null;
-
-    Object.defineProperty(SimpleFormatter, "dateFormat", {
-      get: function dateFormat() {
-        if (!this._dateFormat)
-          this._dateFormat = "%Y-%m-%d %H:%M:%S";
-        return this._dateFormat;
-      },
-
-      set: function dateFormat(format) {
-        this._dateFormat = format;
-      }
-    });
-
-    Object.defineProperty(SimpleFormatter, "dateFormat", {
-    });
-
     SimpleFormatter.prototype.format = function(message) {
       let messageString = "";
       if (message.hasOwnProperty("message"))
@@ -119,9 +99,11 @@ sce.Logging = {
                     ([,mo] in Iterator(message.messageObjects))].join(" ");
 
       let date = new Date(message.time);
-      let stringLog = date.toLocaleFormat(this.dateFormat) + " " +
+      let dateStr = date.getHours() + ":" + date.getMinutes() + ":" +
+            date.getSeconds() + "." + date.getMilliseconds();
+      let stringLog = dateStr + " " +
             message.levelDesc + " " + message.loggerName + " " +
-            messageString + "\n";
+            messageString;
 
       if (message.exception)
         stringLog += message.stackTrace + "\n";
@@ -129,43 +111,42 @@ sce.Logging = {
       return stringLog;
     };
 
-    function ColorTermFormatter(dateFormat) {
-      SimpleFormatter.call(this);
-      if (dateFormat)
-        this.dateFormat = dateFormat;
-    }
+    function ColorTermFormatter() {SimpleFormatter.call(this);}
     ColorTermFormatter.prototype = Object.create(SimpleFormatter.prototype);
     ColorTermFormatter.prototype.constructor = ColorTermFormatter;
-
     ColorTermFormatter.prototype.format = function(message) {
-        let color = colorTermLogColors[message.levelDesc];
-        let stringLog = SimpleFormatter.prototype.format.call(this, message);
-        stringLog = color + stringLog + COLOR_RESET;
+      let color = colorTermLogColors[message.levelDesc];
+      let stringLog = SimpleFormatter.prototype.format.call(this, message);
+      stringLog = color + stringLog + COLOR_RESET;
 
-        return stringLog;
+      return stringLog;
     };
 
     // Loggers are hierarchical, affiliation is handled by a '.' in the name.
-    this._logger = LogMod.repository.getLogger(loggerName);
+    this._logger = this.LogMod.repository.getLogger(loggerName);
     // Lowering this log level will affect all of our addon output
-    this._logger.level = LogMod.Level[SCE_LOG_LEVEL];
+    this._logger.level = this.LogMod.Level[SCE_LOG_LEVEL];
 
     // A console appender outputs to the JS Error Console
-    let dateFormat = "%T";
-    let simpleFormatter = new SimpleFormatter(dateFormat);
-    let capp = new LogMod.ConsoleAppender(simpleFormatter);
-    capp.level = LogMod.Level["Debug"];
+    let simpleFormatter = new SimpleFormatter();
+    let capp = new this.LogMod.ConsoleAppender(simpleFormatter);
+    capp.level = this.LogMod.Level["Debug"];
     this._logger.addAppender(capp);
 
     // A dump appender outputs to standard out
-    let colorFormatter = new ColorTermFormatter(dateFormat);
-    let dapp = new LogMod.DumpAppender(colorFormatter);
-    dapp.level = LogMod.Level["Debug"];
+    let dumpFormatter;
+    if (Services.appinfo.OS.match(/(^Linux|^Darwin|BSD$)/)) {
+      dumpFormatter = new ColorTermFormatter();
+    } else {
+      dumpFormatter = new SimpleFormatter();
+    }
+    let dapp = new this.LogMod.DumpAppender(dumpFormatter);
+    dapp.level = this.LogMod.Level["Debug"];
     this._logger.addAppender(dapp);
   },
 
   getLogger: function(loggerName){
-    return LogMod.repository.getLogger(loggerName);
+    return this.LogMod.repository.getLogger(loggerName);
   }
 
 };                              // sce.Logging

@@ -26,6 +26,9 @@ Andras Tim.
 Notes
 -----
 
+* Hidden preference (edit with about:config) `single_click_skip`, to stil get
+  the certerror page, but skip it in a single click.
+
 * SkipCertError *won't skip* the cert error page when, after an OCSP query, a
   "valid" cert turns out to be revoked. It *won't notify* either. (This is an
   unsupported condition for the time being anyway)
