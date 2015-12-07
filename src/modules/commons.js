@@ -8,11 +8,11 @@
 
 var EXPORTED_SYMBOLS = [ "sce", "SCE_X509CertInterface" ];
 
-const Cc = Components.classes;
-const Ci = Components.interfaces;
+var Cc = Components.classes;
+var Ci = Components.interfaces;
 
 // FIXME: SCE_COMPAT_nsIX509Cert ?
-const SCE_X509CertInterface = ("nsIX509Cert3" in Ci) ? Ci.nsIX509Cert3 : Ci.nsIX509Cert;
+var SCE_X509CertInterface = ("nsIX509Cert3" in Ci) ? Ci.nsIX509Cert3 : Ci.nsIX509Cert;
 
 Components.utils.import("resource://sce/logging.jsm");
 
@@ -23,7 +23,7 @@ if ("undefined" == typeof(sce)) {
   var sce = {};
 };
 
-let log = sce.Logging.getLogger("sce.commons");
+var log = sce.Logging.getLogger("sce.commons");
 
 sce.Utils = {
 

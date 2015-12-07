@@ -30,9 +30,9 @@ Components.utils.import("resource://sce/sec.jsm");
 
 // number of times, for a specific page, that we let the cert error page being
 // called, before overriding it.
-const SCE_CERTERROR_COUNT_MAX = 2;
+var SCE_CERTERROR_COUNT_MAX = 2;
 
-let sce_log = sce.Logging.getLogger("sce.Chrome");
+var sce_log = sce.Logging.getLogger("sce.Chrome");
 
 var sceChrome = {
 
