@@ -42,6 +42,10 @@ Notes
   on [Johnathan's blog](http://blog.johnath.com/2008/08/05/ssl-question-corner/
   "SSL Question Corner")
 
+* You might also want to read of an argument regarding to equality further on
+  [Nat's Blog](http://www.cs.uml.edu/~ntuck/mozilla/ "Mozilla SSL policy bad for
+  the Web")
+
 Acknowledgment
 --------------
 
